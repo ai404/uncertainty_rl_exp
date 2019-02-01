@@ -7,6 +7,7 @@ import random
 class ActionEliminationAlgo():
     def __init__(self, delta, epsilon, omega):
         self.r = 1
+        self.omega_save = omega.copy()
         self.omega = omega
         self.nb_arms = len(self.omega)
         self.est_means = [None for k in range(self.nb_arms)]
@@ -50,23 +51,10 @@ class ActionEliminationAlgo():
             curr_best_minus_bound = curr_best - 2*self.bound(curr_best_arm_id)
 
             for arm_id in self.epoch_list:
-                try:
-                    if curr_best_minus_bound > est_means_with_bounds[arm_id - 1]: 
-                        self.omega.remove(arm_id)
-                except:
-                    print(" !! Problem of index_out_of_range ")
-                    print(" est_means_with_bounds: " + str(est_means_with_bounds))
-                    print(" arm_id: " + str(arm_id))
-                    print(" curr_best: " + str(curr_best))
-                    print(" omega: " + str(self.omega))
+                if curr_best_minus_bound > est_means_with_bounds[arm_id - 1]: 
+                    self.omega.remove(arm_id)
         else:
             pass
-        #curr_best_mean = max(self.est_means)
-        #curr_best_arm_id = self.est_means.index(curr_best_mean) + 1
-        #for arm_id in self.epoch_list:
-        #    if arm_id != curr_best_arm_id:
-        #        if curr_best_mean - self.bound(curr_best_arm_id) > self.est_means[arm_id - 1] + self.bound(arm_id):
-        #            self.omega.remove(arm_id)
 
 
     def nextAction(self):
@@ -86,12 +74,22 @@ class ActionEliminationAlgo():
         if len(self.omega) == 1:
             return True
         else:
-            #print("Omega: " + str(self.omega))
-            #print("Est means: " + str(self.est_means))
             return False
 
     def result(self):
         return list(self.omega)[0]
+
+    def reset(self):
+        self.omega = self.omega_save.copy()
+        self.nb_arms = len(self.omega)
+        self.est_means = [None for k in range(self.nb_arms)]
+        self.received_rewards = [[] for k in range(self.nb_arms)]
+        self.number_times_picked = [0 for k in range(self.nb_arms)]
+        self.epoch_done = False
+        self.epoch_k = 0
+        self.epoch_list = list(self.omega)
+        random.shuffle(self.epoch_list)
+
 
 
 
@@ -166,6 +164,17 @@ class UCBAlgo():
 
     def result(self):
         return self.end_result
+
+    def reset(self):
+        self.est_means = [None for k in range(self.nb_arms)]
+        self.means_with_bounds = [None for k in range(self.nb_arms)]
+        self.received_rewards = [[] for k in range(self.nb_arms)]
+        self.number_times_picked = [0 for k in range(self.nb_arms)]
+        self.initialisation_done = False
+        self.initial_count = 0
+        self.is_done = False
+        self.end_result = None
+
 
 
 class LUCBAlgo():
@@ -249,3 +258,15 @@ class LUCBAlgo():
 
     def result(self):
         return self.end_result
+
+    def reset(self):
+        self.est_means = [None for k in range(self.nb_arms)]
+        self.means_with_bounds = [None for k in range(self.nb_arms)]
+        self.received_rewards = [[] for k in range(self.nb_arms)]
+        self.number_times_picked = [0 for k in range(self.nb_arms)]
+        self.omega_list = list(self.omega)
+        self.initialisation_done = False
+        self.initial_count = 0
+        self.is_done = False
+        self.end_result = None
+        self.one_two_switch = 0

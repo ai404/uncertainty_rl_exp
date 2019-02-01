@@ -9,12 +9,11 @@ import os
 
 
 class MainLoop():
-    def __init__(self, nb_steps, environment):
-        self.delta = 0.1
-        self.epsilon = 0.01
+    def __init__(self, nb_steps, environment, algo):
         self.env = environment
         self.omega = self.env.getOmega()
-        self.algo = ActionEliminationAlgo(self.delta, self.epsilon, self.omega) # Change here for another algorithm
+        self.algo = algo
+        self.algo.reset()
         self.action_memory = []
         self.reward_memory = []
         self.step = 0
@@ -86,7 +85,7 @@ class Drawer():
             else:  
                 print ("Successfully created the directory %s " % path)       
 
-def comparePickingProbabilities(fixed_nb_h1, nb_runs, exp_name, environment):
+def comparePickingProbabilities(fixed_nb_h1, nb_runs, exp_name, environment, algo):
     nb_steps = int(fixed_nb_h1 * environment.getH1())
     nb_arms = environment.getNbArms()
     print("Number of steps: " + str(nb_steps))
@@ -102,7 +101,7 @@ def comparePickingProbabilities(fixed_nb_h1, nb_runs, exp_name, environment):
 
     # Running the MainLoop nb_steps time and populating the sum_action_step matrix
     for i in range(nb_runs):
-        main_loop = MainLoop(nb_steps, environment)
+        main_loop = MainLoop(nb_steps, environment, algo)
         result = main_loop.findBestArm()
         action_mem = main_loop.get_action_memory()
         for time_step in range(len(action_mem)):
@@ -120,14 +119,18 @@ def comparePickingProbabilities(fixed_nb_h1, nb_runs, exp_name, environment):
 
 
 
+
 if __name__ == "__main__":
 
     NB_RUNS = 10
     FIXED_NB_H1 = 80
-
     EXP_NAME = "Try"
+
+    DELTA = 0.1
+    EPSILON = 0.01
 
 
     ENVIRONMENT = BookEnvironment()
+    ALGO = ActionEliminationAlgo(DELTA, EPSILON, ENVIRONMENT.getOmega())
 
-    comparePickingProbabilities(FIXED_NB_H1, NB_RUNS, EXP_NAME, ENVIRONMENT)
+    comparePickingProbabilities(FIXED_NB_H1, NB_RUNS, EXP_NAME, ENVIRONMENT, ALGO)
