@@ -36,16 +36,14 @@ class ActionEliminationAlgo():
 
     def bound(self, arm_id):
         bound = CFunction(self.number_times_picked[arm_id - 1], self.delta, self.nb_arms, self.epsilon)
-        #print("Times picked arm " + str(arm_id) + " is: " + str(self.number_times_picked[arm_id - 1]))
-        #print("Bound: " + str(bound))
         return bound
 
 
     def removeBadArms(self):
         if len(self.omega) > 1:
-            est_means_with_bounds = [0 for k in range(self.nb_arms)]
-            for i in range(self.nb_arms):
-                est_means_with_bounds[i] = self.est_means[i] + self.bound(i+1)
+            est_means_with_bounds = [-math.inf for k in range(self.nb_arms)]
+            for element in self.omega:
+                est_means_with_bounds[element-1] = self.est_means[element-1] + self.bound(element)
             curr_best = max(est_means_with_bounds)
             curr_best_arm_id = est_means_with_bounds.index(curr_best) + 1
             curr_best_minus_bound = curr_best - 2*self.bound(curr_best_arm_id)
