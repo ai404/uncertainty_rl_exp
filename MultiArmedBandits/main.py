@@ -1,4 +1,4 @@
-from environment import ArticleEnvironment, BookEnvironment
+from environment import *
 from algorithms import ActionEliminationAlgo, UCBAlgo, LUCBAlgo
 from utils import smoothen
 import matplotlib.pyplot as plt
@@ -43,20 +43,18 @@ class MainLoop():
 
 
 class Drawer():
-    def __init__(self, exp_name, environment):
+    def __init__(self, exp_name):
         self.output_path_root = "./experiments/" + exp_name
         self.make_dir("./experiments")
         self.make_dir(self.output_path_root)
-        self.H1 = environment.getH1()
-        self.nb_arms = environment.getNbArms()
 
-    def save_png(self, x, sum_action_step, x_label, y_label, plot_title):
+    def save_pick_prob_png(self, x, sum_action_step, x_label, y_label, plot_title):
         plt.subplots()
-        x_normalized = [step/self.H1 for step in x]
-        for i in range(self.nb_arms):
+        nb_arms = len(sum_action_step)
+        for i in range(nb_arms):
             y = sum_action_step[i]
             y = smoothen(y)
-            plt.plot(x_normalized, y)
+            plt.plot(x, y)
         plt.title(plot_title)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
@@ -111,10 +109,9 @@ def comparePickingProbabilities(fixed_nb_h1, nb_runs, exp_name, environment, alg
         if i % (nb_runs/500) == 0:
             print(i * 100 / nb_runs)
     #print(str(sum_action_step)) 
-
     # Drawing the results
-    drawer = Drawer(exp_name, environment)
-    drawer.save_png(range(nb_steps), sum_action_step, "Number of pulls (normalized by H1)", "P(I_t = i)", exp_name)
+    drawer = Drawer(exp_name)
+    drawer.save_pick_prob_png([step/environment.getH1() for step in range(nb_steps)], sum_action_step, "Number of pulls (normalized by H1)", "P(I_t = i)", exp_name)
     drawer.save_csv(sum_action_step, exp_name)
 
 
