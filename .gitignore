@@ -2,3 +2,5 @@
 *.pyc
 
 MultiArmedBandits/experiments/Try/Try\.png
+
+*.png

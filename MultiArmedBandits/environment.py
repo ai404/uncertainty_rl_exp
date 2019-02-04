@@ -14,7 +14,7 @@ class ArticleEnvironment():
     def draw(self, arm_id):
         mean = self.means[arm_id - 1] # mu_1: 1.0    mu_2: 0.8  ... mu_6: 0.0
         reward = np.random.normal(loc=mean, scale = self.std_dev)
-        return reward
+        return reward, self.variance
 
 
     def getOmega(self):
@@ -47,7 +47,7 @@ class BookEnvironment():
     def draw(self, arm_id):
         mean = self.means[arm_id - 1] # mu_1: 1.0    mu_2: 0.8  ... mu_6: 0.0
         reward = np.random.normal(loc=mean, scale = self.draw_std_dev)
-        return reward
+        return reward, self.draw_variance
 
     def getOmega(self):
         return self.omega.copy()
@@ -76,7 +76,7 @@ class CertainRewardEnvironment():
     def draw(self, arm_id):
         mean = self.means[arm_id - 1] # mu_1: 1.0    mu_2: 0.8  ... mu_6: 0.0
         reward = np.random.normal(loc=mean, scale = self.std_dev)
-        return reward
+        return reward, self.variance
 
 
     def getOmega(self):
@@ -106,7 +106,7 @@ class UncertainRewardEnvironment():
         variance = np.random.chisquare(3)/6 + 0.1      # Has a mean of 0.6, and a variance of 1/6
 
         reward = np.random.normal(loc=mean, scale = math.sqrt(variance))
-        return reward
+        return reward, variance
 
     def getOmega(self):
         return self.omega.copy()

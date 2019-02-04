@@ -1,5 +1,5 @@
 from environment import *
-from algorithms import ActionEliminationAlgo, UCBAlgo, LUCBAlgo
+from algorithms import ActionEliminationAlgo, UCBAlgo, LUCBAlgo, ModifiedActionEliminationAlgo
 from utils import smoothen
 import matplotlib.pyplot as plt
 import csv
@@ -22,8 +22,8 @@ class MainLoop():
     def doOneStep(self):
         
         action_record = self.algo.nextAction()
-        reward = self.env.draw(action_record[0])
-        self.algo.update(action_record[0],reward)
+        reward, var = self.env.draw(action_record[0])
+        self.algo.update(action_record[0],reward, var)
 
         if action_record[1]:
             self.action_memory.append(action_record[0])
@@ -33,13 +33,25 @@ class MainLoop():
 
     def findBestArm(self):
         # HERE: Choose the stop condition: algorithm has solved problem OR fixed number of steps (better to do averages per step)
-        #while not self.algo.isDone():
-        while self.step < self.nb_steps:
-            self.doOneStep()
-        return self.algo.result()
+        if not self.nb_steps:
+            while not self.algo.isDone():
+                if self.step >= 10000 and self.step%500 == 0:
+                        print("  Step: " + str(self.step))
+                        print("Omega: " + str(self.algo.omega))
+                        print("Algo_est_means: " + str(self.algo.est_means))
+                        self.algo.printTestBounds()
+                self.doOneStep()
+            return self.algo.result()
+        else:
+            while self.step < self.nb_steps:
+                self.doOneStep()
+            return self.algo.result()
 
     def get_action_memory(self):
         return self.action_memory
+
+    def getStepsUsed(self):
+        return self.step
 
 
 class Drawer():
@@ -106,7 +118,7 @@ def comparePickingProbabilities(fixed_nb_h1, nb_runs, exp_name, environment, alg
             action = action_mem[time_step]
             sum_action_step[action-1][time_step] += 1.0/nb_runs
         # Show at which step we are
-        if i % (nb_runs/500) == 0:
+        if (nb_runs >= 1000 and i % (nb_runs/500) == 0) or (nb_runs <= 1000 and i % (nb_runs/10) == 0):
             print(i * 100 / nb_runs)
     #print(str(sum_action_step)) 
     # Drawing the results
@@ -114,20 +126,36 @@ def comparePickingProbabilities(fixed_nb_h1, nb_runs, exp_name, environment, alg
     drawer.save_pick_prob_png([step/environment.getH1() for step in range(nb_steps)], sum_action_step, "Number of pulls (normalized by H1)", "P(I_t = i)", exp_name)
     drawer.save_csv(sum_action_step, exp_name)
 
+def averageFinishingTime(nb_runs, environment, algo):
+    sum_nb_steps = 0
+    n = 0
+
+    for i in range(nb_runs):
+        main_loop = MainLoop(False, environment, algo)
+        main_loop.findBestArm()
+        sum_nb_steps += main_loop.getStepsUsed()
+        n += 1
+        if (nb_runs >= 1000 and i % (nb_runs/500) == 0) or (nb_runs <= 1000 and i % (nb_runs/10) == 0):
+            print(i * 100 / nb_runs)
+
+    mean = float(sum_nb_steps)/n
+    print("Average nb of step until done: " + str(mean))
+    return mean
 
 
 
 if __name__ == "__main__":
 
-    NB_RUNS = 10
+    NB_RUNS = 500
     FIXED_NB_H1 = 80
-    EXP_NAME = "Try"
+    EXP_NAME = "Try1"
 
     DELTA = 0.1
     EPSILON = 0.01
 
 
-    ENVIRONMENT = BookEnvironment()
-    ALGO = ActionEliminationAlgo(DELTA, EPSILON, ENVIRONMENT.getOmega())
+    ENVIRONMENT = UncertainRewardEnvironment()
+    ALGO = ModifiedActionEliminationAlgo(DELTA, EPSILON, ENVIRONMENT.getOmega())
 
-    comparePickingProbabilities(FIXED_NB_H1, NB_RUNS, EXP_NAME, ENVIRONMENT, ALGO)
+    #comparePickingProbabilities(FIXED_NB_H1, NB_RUNS, EXP_NAME, ENVIRONMENT, ALGO)
+    averageFinishingTime(NB_RUNS, ENVIRONMENT, ALGO)

@@ -21,7 +21,7 @@ class ActionEliminationAlgo():
         random.shuffle(self.epoch_list)
 
 
-    def update(self, arm_id, reward):
+    def update(self, arm_id, reward, var):
         self.received_rewards[arm_id - 1].append(reward)
         self.number_times_picked[arm_id - 1] += 1
         self.est_means[arm_id - 1] = np.mean(self.received_rewards[arm_id - 1])
@@ -109,7 +109,7 @@ class UCBAlgo():
         self.beta = 1.66
 
 
-    def update(self, arm_id, reward):
+    def update(self, arm_id, reward, var):
         self.received_rewards[arm_id - 1].append(reward)
         self.number_times_picked[arm_id - 1] += 1
         self.est_means[arm_id - 1] = np.mean(self.received_rewards[arm_id - 1])
@@ -140,7 +140,6 @@ class UCBAlgo():
 
 
     def isDone(self):
-
         if None in self.est_means or None in self.means_with_bounds:
             return False
 
@@ -173,6 +172,18 @@ class UCBAlgo():
         self.is_done = False
         self.end_result = None
 
+    def printTestBounds(self):
+        curr_best_mean = max(self.est_means)
+        best_mean_act = self.est_means.index(curr_best_mean) + 1
+        curr_best_mean_minus_bound = curr_best_mean - self.bound(best_mean_act)
+
+        second_best_mean_plus_bound = maxExcept(self.means_with_bounds, best_mean_act - 1)
+
+        print("Est_means: " + str(self.est_means))
+        print("Best mean act: " + str(best_mean_act))
+        print("means_with_bounds: " + str(self.means_with_bounds))
+        print("second_best_mean_plus_bound: " + str(second_best_mean_plus_bound))
+        print("curr_best_mean_minus_bound: " + str(curr_best_mean_minus_bound))
 
 
 class LUCBAlgo():
@@ -193,7 +204,7 @@ class LUCBAlgo():
         self.one_two_switch = 0
 
 
-    def update(self, arm_id, reward):
+    def update(self, arm_id, reward, var):
         self.received_rewards[arm_id - 1].append(reward)
         self.number_times_picked[arm_id - 1] += 1
         self.est_means[arm_id - 1] = np.mean(self.received_rewards[arm_id - 1])
@@ -268,3 +279,101 @@ class LUCBAlgo():
         self.is_done = False
         self.end_result = None
         self.one_two_switch = 0
+
+
+
+
+
+class ModifiedActionEliminationAlgo():
+    def __init__(self, delta, epsilon, omega):
+        self.r = 1
+        self.omega_save = omega.copy()
+        self.omega = omega
+        self.nb_arms = len(self.omega)
+        self.est_means = [None for k in range(self.nb_arms)]
+        self.received_rewards = [[] for k in range(self.nb_arms)]
+        self.received_rewards_weights = [[] for k in range(self.nb_arms)]
+        self.number_times_picked = [0 for k in range(self.nb_arms)]
+        self.delta = delta
+        self.epsilon = epsilon
+        self.epoch_done = False
+        self.epoch_k = 0
+        self.epoch_list = list(self.omega)
+        random.shuffle(self.epoch_list)
+
+
+    def update(self, arm_id, reward, var):
+        self.received_rewards[arm_id - 1].append(reward)
+        weight = 0.1 + 0.15/var
+        self.received_rewards_weights[arm_id - 1].append(weight)
+        self.number_times_picked[arm_id - 1] += weight
+        #print("Received rewards: " + str(self.received_rewards))
+        #print("Received_rewards_weights: " + str(self.received_rewards_weights))
+        try:
+            self.est_means[arm_id - 1] = np.average(self.received_rewards[arm_id - 1], weights = self.received_rewards_weights[arm_id - 1])
+        except:
+            print("Received rewards: " + str(self.received_rewards))
+            print("Received_rewards_weights: " + str(self.received_rewards_weights))
+        
+        if self.epoch_done:
+            self.removeBadArms()
+            self.epoch_done = False
+            self.epoch_k = 0
+            self.epoch_list = list(self.omega)
+            random.shuffle(self.epoch_list)
+
+
+    def bound(self, arm_id):
+        bound = CFunction(self.number_times_picked[arm_id - 1], self.delta, self.nb_arms, self.epsilon)
+        return bound
+
+
+    def removeBadArms(self):
+        if len(self.omega) > 1:
+            est_means_with_bounds = [-math.inf for k in range(self.nb_arms)]
+            for element in self.omega:
+                est_means_with_bounds[element-1] = self.est_means[element-1] + self.bound(element)
+            curr_best = max(est_means_with_bounds)
+            curr_best_arm_id = est_means_with_bounds.index(curr_best) + 1
+            curr_best_minus_bound = curr_best - 2*self.bound(curr_best_arm_id)
+
+            for arm_id in self.epoch_list:
+                if curr_best_minus_bound > est_means_with_bounds[arm_id - 1]: 
+                    self.omega.remove(arm_id)
+        else:
+            pass
+
+
+    def nextAction(self):
+        if len(self.epoch_list) == 1:
+            return self.epoch_list[0], True
+        else:
+            action = self.epoch_list[self.epoch_k % len(self.epoch_list)]
+            self.epoch_k += 1
+            if self.epoch_k >= len(self.omega) * self.r:
+                self.epoch_done = True
+                #print("Epoch done! ")
+            record = True
+            return action, True
+
+
+    def isDone(self):
+        if len(self.omega) == 1:
+            return True
+        else:
+            return False
+
+    def result(self):
+        return list(self.omega)[0]
+
+    def reset(self):
+        self.omega = self.omega_save.copy()
+        self.nb_arms = len(self.omega)
+        self.est_means = [None for k in range(self.nb_arms)]
+        self.received_rewards = [[] for k in range(self.nb_arms)]
+        self.received_rewards_weights = [[] for k in range(self.nb_arms)]
+        self.number_times_picked = [0 for k in range(self.nb_arms)]
+        self.epoch_done = False
+        self.epoch_k = 0
+        self.epoch_list = list(self.omega)
+        random.shuffle(self.epoch_list)
