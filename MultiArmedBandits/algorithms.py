@@ -403,7 +403,7 @@ class EpsilonGreedyAlgo():
         self.decay_rate = decay_rate
         self.epsilon_save = epsilon
         self.minimal_epsilon = 0.01
-        self.name = "e-greedy"
+        self.name = "egreedy"
 
     def reset(self):
         self.epsilon = self.epsilon_save
@@ -441,7 +441,7 @@ class ModifiedEpsilonGreedyAlgo():
         self.decay_rate = decay_rate
         self.epsilon_save = epsilon
         self.minimal_epsilon = 0.01
-        self.name = "Modified e-greedy"
+        self.name = "Modified egreedy"
 
 
     def reset(self):

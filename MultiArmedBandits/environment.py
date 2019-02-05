@@ -10,6 +10,7 @@ class ArticleEnvironment():
         self.variance = 0.25
         self.std_dev = math.sqrt(self.variance)
         self.omega = {1, 2, 3, 4, 5, 6}
+        self.name = "Article 6-arm bandit"
 
     def draw(self, arm_id):
         mean = self.means[arm_id - 1] # mu_1: 1.0    mu_2: 0.8  ... mu_6: 0.0
@@ -44,6 +45,7 @@ class BookEnvironment():
         self.omega = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
         self.draw_variance = 1
         self.means_variance = 1
+        self.name = "Sutton's book 10-arm bandit"
 
         self.draw_std_dev = math.sqrt(self.draw_variance)
         self.means_std_dev = math.sqrt(self.means_variance)
@@ -84,6 +86,7 @@ class CertainRewardEnvironment():
         self.variance = 0.6
         self.std_dev = math.sqrt(self.variance)
         self.omega = {1, 2, 3, 4}
+        self.name = "fixed variance 4-arm bandit"
 
     def draw(self, arm_id):
         mean = self.means[arm_id - 1] # mu_1: 1.0    mu_2: 0.8  ... mu_6: 0.0
@@ -114,6 +117,8 @@ class UncertainRewardEnvironment():
     def __init__(self):
         self.omega = {1, 2, 3, 4}
         self.means = [0, 0.3, 0.6, 0.9]
+        self.name = "changing variance 4-arm bandit"
+
     
     def draw(self, arm_id):
         mean = self.means[arm_id - 1]
@@ -147,7 +152,8 @@ class CertainRewardHardEnvironment():
         self.variance = 0.6
         self.std_dev = math.sqrt(self.variance)
         self.means = [0, 0.80, 0.85, 0.9]
-    
+        self.name = "fixed variance hard 4-arm bandit"
+
     def draw(self, arm_id):
         mean = self.means[arm_id - 1] # mu_1: 1.0    mu_2: 0.8  ... mu_6: 0.0
         reward = np.random.normal(loc=mean, scale = self.std_dev)
@@ -176,7 +182,8 @@ class UncertainRewardHardEnvironment():
     def __init__(self):
         self.omega = {1, 2, 3, 4}
         self.means = [0, 0.80, 0.85, 0.9]
-    
+        self.name = "changing variance hard 4-arm bandit"
+
     def draw(self, arm_id):
         mean = self.means[arm_id - 1]
         variance = np.random.chisquare(3)/6 + 0.1      # Has a mean of 0.6, and a variance of 1/6
