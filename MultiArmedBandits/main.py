@@ -230,7 +230,7 @@ def compareAverageRegrets(nb_runs, exp_name, environment, algo1, algo2, nb_steps
 if __name__ == "__main__":
 
     NB_RUNS = 2000
-    EXP_NAME = "Try_e_05_dec_0995"
+    EXP_NAME = "Try_e_05_dec_0995_corrected"
     ENVIRONMENT = UncertainRewardEnvironment()
     TASK = "RegretMin"  # "BestArmIDPickProb" "BestArmIDFinTime"
 

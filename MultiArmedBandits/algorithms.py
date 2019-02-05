@@ -399,7 +399,6 @@ class EpsilonGreedyAlgo():
         self.nb_arms = len(self.omega)
         self.est_means = [-math.inf for k in range(self.nb_arms)]
         self.received_rewards = [[] for k in range(self.nb_arms)]
-        self.number_times_picked = [0 for k in range(self.nb_arms)]
         self.epsilon = epsilon
         self.decay_rate = decay_rate
         self.epsilon_save = epsilon
@@ -411,11 +410,9 @@ class EpsilonGreedyAlgo():
         self.est_means = [-math.inf for k in range(self.nb_arms)]
         self.received_rewards = [[] for k in range(self.nb_arms)]
         self.received_rewards_weights = [[] for k in range(self.nb_arms)]
-        self.number_times_picked = [0 for k in range(self.nb_arms)]
 
     def update(self, arm_id, reward, var):
         self.received_rewards[arm_id - 1].append(reward)
-        self.number_times_picked[arm_id - 1] += 1
         self.est_means[arm_id - 1] = np.average(self.received_rewards[arm_id - 1])
 
     def nextAction(self):
@@ -440,7 +437,6 @@ class ModifiedEpsilonGreedyAlgo():
         self.est_means = [-math.inf for k in range(self.nb_arms)]
         self.received_rewards = [[] for k in range(self.nb_arms)]
         self.received_rewards_weights = [[] for k in range(self.nb_arms)]
-        self.number_times_picked = [0 for k in range(self.nb_arms)]
         self.epsilon = epsilon
         self.decay_rate = decay_rate
         self.epsilon_save = epsilon
@@ -453,13 +449,11 @@ class ModifiedEpsilonGreedyAlgo():
         self.est_means = [-math.inf for k in range(self.nb_arms)]
         self.received_rewards = [[] for k in range(self.nb_arms)]
         self.received_rewards_weights = [[] for k in range(self.nb_arms)]
-        self.number_times_picked = [0 for k in range(self.nb_arms)]
 
     def update(self, arm_id, reward, var):
         self.received_rewards[arm_id - 1].append(reward)
-        weight = 0.1 + 0.15/var
+        weight = 0.1 + 0.54/var
         self.received_rewards_weights[arm_id - 1].append(weight)
-        self.number_times_picked[arm_id - 1] += weight
         self.est_means[arm_id - 1] = np.average(self.received_rewards[arm_id - 1], weights = self.received_rewards_weights[arm_id - 1])
 
     def nextAction(self):
