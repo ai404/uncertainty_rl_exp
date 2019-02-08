@@ -24,7 +24,6 @@ class MainLoop():
         self.best_move_memory = []
 
     def doOneStep(self):
-        
         action_record = self.algo.nextAction()
         reward, var = self.env.draw(action_record[0])
         self.algo.update(action_record[0],reward, var)
@@ -104,10 +103,12 @@ class Drawer():
         plt.subplots()
         for y_id in range(len(y_list)):
             y = y_list[y_id]
+            y_smooth = smoothen(y)
             if legend:
                 plt.plot(x,y, label = legend[y_id])
         if legend:
-            plt.legend(legend)
+            plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+          fancybox=True, shadow=True)
         plt.title(plot_title)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
@@ -325,8 +326,8 @@ def compareAverageRegretsGeneral(nb_runs, exp_name, env_list, algo_list, nb_step
 
 if __name__ == "__main__":
 
-    NB_RUNS = 1000
-    EXP_NAME = "Try"
+    NB_RUNS = 5000
+    EXP_NAME = "19-02-07_5e"
     TASK = "RegretMinCompare"  # "BestArmIDPickProb" "BestArmIDFinTime"
 
 
@@ -365,9 +366,11 @@ if __name__ == "__main__":
         compareAverageRegretsEnvs(NB_RUNS, EXP_NAME, ENV1, ENV2, ALGO, NB_STEPS)
 
     elif TASK == "RegretMinCompare":
-        ENV1 = UncertainRewardEnvironment7()
-        ENV2 = UncertainRewardEnvironment8()
-        ENV3 = UncertainRewardEnvironment9()
+        ENV1 = UncertainRewardEnvironment6()
+        #ENV2 = CertainRewardEnvironment2()
+        #ENV3 = UncertainRewardEnvironment()
+        #ENV4 = UncertainRewardEnvironment2()
+        #ENV3 = UncertainRewardEnvironment9()
         EPSILON = 0.5
         DECAY = 0.995
         NB_STEPS = 1000
@@ -375,8 +378,8 @@ if __name__ == "__main__":
         ALGO1 = ModifiedEpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())
         ALGO2 = CheatingEpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())
 
-        DO_LIST = [[0, 0, 1], [1, 1, 1], [0, 0, 1]]
+        DO_LIST = [[1], [1], [1]]
 
-        compareAverageRegretsGeneral(NB_RUNS, EXP_NAME, [ENV1, ENV2, ENV3], [ALGO0, ALGO1, ALGO2], NB_STEPS, DO_LIST)
+        compareAverageRegretsGeneral(NB_RUNS, EXP_NAME, [ENV1], [ALGO0, ALGO1, ALGO2], NB_STEPS, DO_LIST)
 
 
