@@ -1,6 +1,6 @@
 from environment import *
 from algorithms import *
-from utils import smoothen
+from utils import *
 import matplotlib.pyplot as plt
 import csv
 import os
@@ -17,6 +17,7 @@ class MainLoop():
         self.algo.reset()
         self.action_memory = []
         self.reward_memory = []
+        self.est_means_err_memory = []
         self.step_regret_memory = []
         self.total_regret_memory = []
         self.step = 0
@@ -42,6 +43,10 @@ class MainLoop():
                 self.best_move_memory.append(1)
             else:
                 self.best_move_memory.append(0)
+            real_means = self.env.getMeans()
+            est_means = self.algo.getEstMeans()
+            L2_mean_error = L2_distance(real_means, est_means)
+            self.est_means_err_memory.append(L2_mean_error)
             self.step += 1
 
 
@@ -70,6 +75,9 @@ class MainLoop():
 
     def getBestMoveMemory(self):
         return self.best_move_memory
+
+    def getEstMeanErrMemory(self):
+        return self.est_means_err_memory
 
 class Drawer():
     def __init__(self, exp_name):
@@ -322,13 +330,50 @@ def compareAverageRegretsGeneral(nb_runs, exp_name, env_list, algo_list, nb_step
     drawer.saveMultiPlotPNG(range(nb_steps), best_move_prob, "steps", "Probability of best move", "Best move probability over " + str(nb_runs), legend) # Save best move proba plot
 
 
+def estimateMeanError(nb_runs, exp_name, env_list, algo_list, nb_steps, do_list = False):
+    nb_env = len(env_list)
+    nb_algo = len(algo_list)
 
+    drawer = Drawer(exp_name)
+
+    nb_experiments = sum(sum(do) for do in do_list)
+
+    all_means_errors = [[0 for step in range(nb_steps)] for exp in range(nb_experiments)]
+    exp_id = 0
+    algo_id = 0
+    env_id = 0
+    legend = []
+
+    if not do_list: ## Do all of them
+        do_list = [[1 for env in env_list] for algo in algo_list]
+
+    for algo in algo_list: # For each algo
+        print("Running algo: " + algo.name)
+        env_id = 0
+        for env in env_list:    # For each environment
+            if do_list[algo_id][env_id]:
+                print("Running on environment: " + env.name)
+                legend.append(algo.name + " in " + env.name) # Add "algo in env" in the legend
+                for i in range(nb_runs):                     # Starting the run
+                    main_loop = MainLoop(nb_steps, env, algo)   # Start main loop
+                    main_loop.findBestArm()                     # Run until nb_steps is achieved
+                    mean_error_mem = main_loop.getEstMeanErrMemory()   # Get regret memory
+                    for j in range(nb_steps):                   # For each step
+                        all_means_errors[exp_id][j] += (mean_error_mem[j] - all_means_errors[exp_id][j])/(i+1) # Update the regret mean
+                    if (nb_runs >= 1000 and i % (nb_runs/500) == 0) or (nb_runs <= 1000 and i % (nb_runs/10) == 0): # Printing stuff to see where it is
+                        print(i * 100 / nb_runs)
+                exp_id += 1
+            env_id += 1
+        algo_id += 1
+
+    drawer.saveMultiCSV(exp_name + "_mean_est_error", all_means_errors, legend) # Save CSV
+    drawer.saveMultiPlotPNG(range(nb_steps), all_means_errors, "steps", "L2 error on estimated means", "Average error on estimated means on " + str(nb_runs), legend) # Save regret plot
 
 if __name__ == "__main__":
 
     NB_RUNS = 5000
-    EXP_NAME = "19-02-07_5e"
-    TASK = "RegretMinCompare"  # "BestArmIDPickProb" "BestArmIDFinTime"
+    EXP_NAME = "19-02-07_7a"
+    TASK = "MeanEstError"  # "BestArmIDPickProb" "BestArmIDFinTime"
 
 
     # Best arm identification parameters
@@ -347,24 +392,6 @@ if __name__ == "__main__":
         ALGO = ModifiedActionEliminationAlgo(DELTA, EPSILON, ENVIRONMENT.getOmega())
         averageFinishingTime(NB_RUNS, ENVIRONMENT, ALGO)
 
-    elif TASK == "RegretMinAlgosCompare":
-        ENVIRONMENT = UncertainRewardEnvironment6()
-        EPSILON = 0.5
-        DECAY = 0.995
-        NB_STEPS = 1000
-        ALGO1 = EpsilonGreedyAlgo(EPSILON, DECAY, ENVIRONMENT.getOmega())
-        ALGO2 = ModifiedEpsilonGreedyAlgo(EPSILON, DECAY, ENVIRONMENT.getOmega())
-        compareAverageRegretsAlgos(NB_RUNS, EXP_NAME, ENVIRONMENT, ALGO1, ALGO2, NB_STEPS)
-
-    elif TASK == "RegretMinEnvsCompare":
-        ENV1 = UncertainRewardEnvironment8()
-        ENV2 = UncertainRewardEnvironment9()
-        EPSILON = 0.5
-        DECAY = 0.995
-        NB_STEPS = 1000
-        ALGO = ModifiedEpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())
-        compareAverageRegretsEnvs(NB_RUNS, EXP_NAME, ENV1, ENV2, ALGO, NB_STEPS)
-
     elif TASK == "RegretMinCompare":
         ENV1 = UncertainRewardEnvironment6()
         #ENV2 = CertainRewardEnvironment2()
@@ -382,4 +409,18 @@ if __name__ == "__main__":
 
         compareAverageRegretsGeneral(NB_RUNS, EXP_NAME, [ENV1], [ALGO0, ALGO1, ALGO2], NB_STEPS, DO_LIST)
 
+    elif TASK == "MeanEstError":
+        ENV1 = OneArmUncertainRewardEnvironment()
+        #ENV2 = UncertainRewardEnvironment8()
+        #ENV3 = UncertainRewardEnvironment9()
+        #ENV4 = UncertainRewardEnvironment2()
+        #ENV3 = UncertainRewardEnvironment9()
+        EPSILON = 0.5
+        DECAY = 0.995
+        NB_STEPS = 100
+        ALGO0 = EpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())
+        ALGO1 = ModifiedEpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())
 
+        DO_LIST = [[1], [1]]
+
+        estimateMeanError(NB_RUNS, EXP_NAME, [ENV1], [ALGO0, ALGO1], NB_STEPS, DO_LIST)

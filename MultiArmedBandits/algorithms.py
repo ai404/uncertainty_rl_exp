@@ -430,6 +430,9 @@ class EpsilonGreedyAlgo():
         self.epsilon = max(self.epsilon*self.decay_rate, self.minimal_epsilon)
         return action, True
 
+    def getEstMeans(self):
+        return self.est_means
+
 
 class ModifiedEpsilonGreedyAlgo(EpsilonGreedyAlgo):
 

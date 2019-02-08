@@ -12,7 +12,10 @@ class BaseEnvironment():
         pass
 
     def getOmega(self):
-        return self.omega.copy()
+        return self.omega.copy()    
+
+    def getMeans(self):
+        return self.means.copy()
 
     def getH1(self):
         H1 = 0
@@ -33,6 +36,7 @@ class BaseEnvironment():
         best_mean = max(self.means)
         best_arm = self.means.index(best_mean) + 1
         return best_arm
+
 
 
 class ArticleEnvironment(BaseEnvironment):
@@ -235,6 +239,17 @@ class UncertainRewardEnvironment9(BaseEnvironment):
         return reward, variance
 
 
+class OneArmUncertainRewardEnvironment(BaseEnvironment):
+    def __init__(self):
+        self.means = [1]
+        self.omega = {1}
+        self.name = "changing variance 1-arm bandit"
+
+    def draw(self, arm_id):
+        mean = self.means[arm_id - 1]
+        variance = np.random.chisquare(3)/6 + 0.1      # Has a mean of 0.6, and a variance of 1/6
+        reward = np.random.normal(loc=mean, scale = math.sqrt(variance))
+        return reward, variance
 
 class TryEnvironment(BaseEnvironment):
     def __init__(self):

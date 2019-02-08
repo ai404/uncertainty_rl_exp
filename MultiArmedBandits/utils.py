@@ -27,3 +27,10 @@ def smoothen(a_list):
         a.append((a_list[i] + a_list[i+1])/2)
     a.append(a_list[-1])
     return a
+
+def L2_distance(list_a, list_b):
+    dist = 0
+    assert len(list_a) == len(list_b), "L2_distance: length of list a: " + str(len(list_a)) + " is not equal to length o list b: " + str(len(list_b))
+    for i in range(len(list_a)):
+        dist += (list_a[i] - list_b[i])**2
+    return dist
