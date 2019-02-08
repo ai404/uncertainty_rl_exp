@@ -21,6 +21,7 @@ class MainLoop():
         self.total_regret_memory = []
         self.step = 0
         self.nb_steps = nb_steps
+        self.best_move_memory = []
 
     def doOneStep(self):
         
@@ -38,6 +39,10 @@ class MainLoop():
                 self.total_regret_memory.append(self.total_regret_memory[-1] + step_regret)
             else:
                 self.total_regret_memory.append(step_regret)
+            if action_record[0] == self.env.bestArm():
+                self.best_move_memory.append(1)
+            else:
+                self.best_move_memory.append(0)
             self.step += 1
 
 
@@ -64,6 +69,8 @@ class MainLoop():
     def getTotalRegMemory(self):
         return self.total_regret_memory
 
+    def getBestMoveMemory(self):
+        return self.best_move_memory
 
 class Drawer():
     def __init__(self, exp_name):
@@ -277,6 +284,7 @@ def compareAverageRegretsGeneral(nb_runs, exp_name, env_list, algo_list, nb_step
     nb_experiments = sum(sum(do) for do in do_list)
 
     all_reg_means = [[0 for step in range(nb_steps)] for exp in range(nb_experiments)]
+    best_move_prob = [[0 for step in range(nb_steps)] for exp in range(nb_experiments)]
     exp_id = 0
     algo_id = 0
     env_id = 0
@@ -285,35 +293,40 @@ def compareAverageRegretsGeneral(nb_runs, exp_name, env_list, algo_list, nb_step
     if not do_list: ## Do all of them
         do_list = [[1 for env in env_list] for algo in algo_list]
 
-    for algo in algo_list:
+    for algo in algo_list: # For each algo
         print("Running algo: " + algo.name)
         env_id = 0
-        for env in env_list:
+        for env in env_list:    # For each environment
             if do_list[algo_id][env_id]:
                 print("Running on environment: " + env.name)
-                legend.append(algo.name + " in " + env.name)
-                for i in range(nb_runs):
-                    main_loop = MainLoop(nb_steps, env, algo)
-                    main_loop.findBestArm()
-                    total_regrets = main_loop.getTotalRegMemory()
-                    for j in range(nb_steps):
-                        all_reg_means[exp_id][j] += (total_regrets[j] - all_reg_means[exp_id][j])/(i+1)
-                    if (nb_runs >= 1000 and i % (nb_runs/500) == 0) or (nb_runs <= 1000 and i % (nb_runs/10) == 0):
+                legend.append(algo.name + " in " + env.name) # Add "algo in env" in the legend
+                for i in range(nb_runs):                     # Starting the run
+                    main_loop = MainLoop(nb_steps, env, algo)   # Start main loop
+                    main_loop.findBestArm()                     # Run until nb_steps is achieved
+                    total_regrets = main_loop.getTotalRegMemory()   # Get regret memory
+                    best_move = main_loop.getBestMoveMemory()
+                    for j in range(nb_steps):                   # For each step
+                        all_reg_means[exp_id][j] += (total_regrets[j] - all_reg_means[exp_id][j])/(i+1) # Update the regret mean
+                        best_move_prob[exp_id][j] += (best_move[j] - best_move_prob[exp_id][j])/(i+1)   # Update the best move probability
+                    if (nb_runs >= 1000 and i % (nb_runs/500) == 0) or (nb_runs <= 1000 and i % (nb_runs/10) == 0): # Printing stuff to see where it is
                         print(i * 100 / nb_runs)
                 print(str(env.name) + ": average total of regret after " + str(nb_steps) + " steps and " + str(nb_runs) + " runs is : " + str(all_reg_means[exp_id][-1]))
                 exp_id += 1
             env_id += 1
         algo_id += 1
 
-    drawer.saveMultiCSV(exp_name, all_reg_means, legend)
-    drawer.saveMultiPlotPNG(range(nb_steps), all_reg_means, "steps", "Regret", "Comparison of average regrets over " + str(nb_runs), legend)
+    drawer.saveMultiCSV(exp_name + "_avg_regret", all_reg_means, legend) # Save CSV
+    drawer.saveMultiCSV(exp_name + "_best_move_prob", best_move_prob, legend) # Save CSV
+    drawer.saveMultiPlotPNG(range(nb_steps), all_reg_means, "steps", "Regret", "Comparison of average regrets over " + str(nb_runs), legend) # Save regret plot
+    drawer.saveMultiPlotPNG(range(nb_steps), best_move_prob, "steps", "Probability of best move", "Best move probability over " + str(nb_runs), legend) # Save best move proba plot
+
 
 
 
 if __name__ == "__main__":
 
-    NB_RUNS = 2000
-    EXP_NAME = "19-02-07_6a"
+    NB_RUNS = 1000
+    EXP_NAME = "Try"
     TASK = "RegretMinCompare"  # "BestArmIDPickProb" "BestArmIDFinTime"
 
 

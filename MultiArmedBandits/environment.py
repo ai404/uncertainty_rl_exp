@@ -29,6 +29,10 @@ class BaseEnvironment():
         best_mean = max(self.means)
         return best_mean
 
+    def bestArm(self):
+        best_mean = max(self.means)
+        best_arm = self.means.index(best_mean) + 1
+        return best_arm
 
 
 class ArticleEnvironment(BaseEnvironment):
