@@ -456,16 +456,31 @@ class ModifiedEpsilonGreedyAlgo():
         self.received_rewards_weights[arm_id - 1].append(weight)
         self.est_means[arm_id - 1] = np.average(self.received_rewards[arm_id - 1], weights = self.received_rewards_weights[arm_id - 1])
 
+class CheatingEpsilonGreedyAlgo():
+    def __init__(self, epsilon, decay_rate, omega):
+        self.r = 1
+        self.omega = omega
+        self.nb_arms = len(self.omega)
+        self.epsilon = epsilon
+        self.decay_rate = decay_rate
+        self.epsilon_save = epsilon
+        self.minimal_epsilon = 0.01
+        self.name = "Cheating egreedy"
+        print("Cheating e-greedy assumes that the best arm is the last one of the omega set. Here, it will use: " + str(max(self.omega)))
+
+    def reset(self):
+        self.epsilon = self.epsilon_save
+
+    def update(self, arm_id, reward, var):
+        pass
+
     def nextAction(self):
         pick = np.random.rand()
         if pick < self.epsilon:
             action = random.sample(self.omega, 1)
             action = action[0]
         else:
-            best_mean = max(self.est_means)
-            action = self.est_means.index(best_mean) + 1
+            action = max(self.omega)
 
         self.epsilon = max(self.epsilon*self.decay_rate, self.minimal_epsilon)
         return action, True
-
-    
