@@ -266,33 +266,44 @@ def compareAverageRegretsEnvs(nb_runs, exp_name, env1, env2, algo, nb_steps):
     print(str(env1.name) + ": average total of regret after " + str(nb_steps) + " steps and " + str(nb_runs) + " runs is : " + str(total_regrets_mean_1[-1]))
     print(str(env2.name) + ": average total of regret after " + str(nb_steps) + " steps and " + str(nb_runs) + " runs is : " + str(total_regrets_mean_2[-1]))
 
-def compareAverageRegretsGeneral(nb_runs, exp_name, env_list, algo_list, nb_steps):
+def compareAverageRegretsGeneral(nb_runs, exp_name, env_list, algo_list, nb_steps, do_list = False):
+    # do_list is a 1 or 0 list saying which combination should be done. 
+    # do_list[i][j] = 1 means we want algo [i] in env[j] to be tested
     nb_env = len(env_list)
     nb_algo = len(algo_list)
 
     drawer = Drawer(exp_name)
 
-    nb_experiments = nb_env * nb_algo
+    nb_experiments = sum(sum(do) for do in do_list)
 
     all_reg_means = [[0 for step in range(nb_steps)] for exp in range(nb_experiments)]
     exp_id = 0
+    algo_id = 0
+    env_id = 0
     legend = []
 
-    for env in env_list:
-        print("Running on environment: " + env.name)
-        for algo in algo_list:
-            print("Running algo: " + algo.name)
-            legend.append(algo.name + " in " + env.name)
-            for i in range(nb_runs):
-                main_loop = MainLoop(nb_steps, env, algo)
-                main_loop.findBestArm()
-                total_regrets = main_loop.getTotalRegMemory()
-                for j in range(nb_steps):
-                    all_reg_means[exp_id][j] += (total_regrets[j] - all_reg_means[exp_id][j])/(i+1)
-                if (nb_runs >= 1000 and i % (nb_runs/500) == 0) or (nb_runs <= 1000 and i % (nb_runs/10) == 0):
-                    print(i * 100 / nb_runs)
-            print(str(env.name) + ": average total of regret after " + str(nb_steps) + " steps and " + str(nb_runs) + " runs is : " + str(all_reg_means[exp_id][-1]))
-            exp_id += 1
+    if not do_list: ## Do all of them
+        do_list = [[1 for env in env_list] for algo in algo_list]
+
+    for algo in algo_list:
+        print("Running algo: " + algo.name)
+        env_id = 0
+        for env in env_list:
+            if do_list[algo_id][env_id]:
+                print("Running on environment: " + env.name)
+                legend.append(algo.name + " in " + env.name)
+                for i in range(nb_runs):
+                    main_loop = MainLoop(nb_steps, env, algo)
+                    main_loop.findBestArm()
+                    total_regrets = main_loop.getTotalRegMemory()
+                    for j in range(nb_steps):
+                        all_reg_means[exp_id][j] += (total_regrets[j] - all_reg_means[exp_id][j])/(i+1)
+                    if (nb_runs >= 1000 and i % (nb_runs/500) == 0) or (nb_runs <= 1000 and i % (nb_runs/10) == 0):
+                        print(i * 100 / nb_runs)
+                print(str(env.name) + ": average total of regret after " + str(nb_steps) + " steps and " + str(nb_runs) + " runs is : " + str(all_reg_means[exp_id][-1]))
+                exp_id += 1
+            env_id += 1
+        algo_id += 1
 
     drawer.saveMultiCSV(exp_name, all_reg_means, legend)
     drawer.saveMultiPlotPNG(range(nb_steps), all_reg_means, "steps", "Regret", "Comparison of average regrets over " + str(nb_runs), legend)
@@ -337,19 +348,22 @@ if __name__ == "__main__":
         EPSILON = 0.5
         DECAY = 0.995
         NB_STEPS = 1000
-        ALGO = EpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())
+        ALGO = ModifiedEpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())
         compareAverageRegretsEnvs(NB_RUNS, EXP_NAME, ENV1, ENV2, ALGO, NB_STEPS)
 
     elif TASK == "RegretMinCompare":
-        ENV1 = TryEnvironment()
+        ENV1 = UncertainRewardEnvironment7()
         ENV2 = UncertainRewardEnvironment8()
         ENV3 = UncertainRewardEnvironment9()
         EPSILON = 0.5
         DECAY = 0.995
         NB_STEPS = 1000
-        ALGO1 = EpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())
-        ALGO0 = ModifiedEpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())
+        ALGO0 = EpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())
+        ALGO1 = ModifiedEpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())
         ALGO2 = CheatingEpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())
-        compareAverageRegretsGeneral(NB_RUNS, EXP_NAME, [ENV1, ENV2, ENV3], [ALGO0, ALGO1, ALGO2], NB_STEPS)
+
+        DO_LIST = [[0, 0, 1], [1, 1, 1], [0, 0, 1]]
+
+        compareAverageRegretsGeneral(NB_RUNS, EXP_NAME, [ENV1, ENV2, ENV3], [ALGO0, ALGO1, ALGO2], NB_STEPS, DO_LIST)
 
 
