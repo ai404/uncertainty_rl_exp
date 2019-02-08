@@ -93,7 +93,7 @@ class Drawer():
         output_path = self.output_path_root + "/" + plot_title + ".png"
         plt.savefig(output_path, bbox_inches="tight")
 
-    def saveMutliPlotPNG(self, x, y_list, x_label, y_label, plot_title, legend = False):
+    def saveMultiPlotPNG(self, x, y_list, x_label, y_label, plot_title, legend = False):
         plt.subplots()
         for y_id in range(len(y_list)):
             y = y_list[y_id]
@@ -234,7 +234,7 @@ def compareAverageRegretsAlgos(nb_runs, exp_name, environment, algo1, algo2, nb_
 
     drawer = Drawer(exp_name)
     drawer.saveMultiCSV(exp_name, both_reg_means, [algo1.name, algo2.name])
-    drawer.saveMutliPlotPNG(range(nb_steps), both_reg_means, "Steps", "Regret", "Comparison of average regrets over " + str(nb_runs) + " runs on " + environment.name, [algo1.name, algo2.name])
+    drawer.saveMultiPlotPNG(range(nb_steps), both_reg_means, "Steps", "Regret", "Comparison of average regrets over " + str(nb_runs) + " runs on " + environment.name, [algo1.name, algo2.name])
     print(str(algo1.name) + ": average total of regret after " + str(nb_steps) + " steps and " + str(nb_runs) + " runs is : " + str(total_regrets_mean_1[-1]))
     print(str(algo2.name) + ": average total of regret after " + str(nb_steps) + " steps and " + str(nb_runs) + " runs is : " + str(total_regrets_mean_2[-1]))
 
@@ -262,23 +262,53 @@ def compareAverageRegretsEnvs(nb_runs, exp_name, env1, env2, algo, nb_steps):
 
     drawer = Drawer(exp_name)
     drawer.saveMultiCSV(exp_name, both_reg_means, [env1.name, env2.name])
-    drawer.saveMutliPlotPNG(range(nb_steps), both_reg_means, "Steps", "Regret", "Comparison of average regrets over " + str(nb_runs) + " runs using " + algo.name, [env1.name, env2.name])
+    drawer.saveMultiPlotPNG(range(nb_steps), both_reg_means, "Steps", "Regret", "Comparison of average regrets over " + str(nb_runs) + " runs using " + algo.name, [env1.name, env2.name])
     print(str(env1.name) + ": average total of regret after " + str(nb_steps) + " steps and " + str(nb_runs) + " runs is : " + str(total_regrets_mean_1[-1]))
     print(str(env2.name) + ": average total of regret after " + str(nb_steps) + " steps and " + str(nb_runs) + " runs is : " + str(total_regrets_mean_2[-1]))
 
+def compareAverageRegretsGeneral(nb_runs, exp_name, env_list, algo_list, nb_steps):
+    nb_env = len(env_list)
+    nb_algo = len(algo_list)
+
+    drawer = Drawer(exp_name)
+
+    nb_experiments = nb_env * nb_algo
+
+    all_reg_means = [[0 for step in range(nb_steps)] for exp in range(nb_experiments)]
+    exp_id = 0
+    legend = []
+
+    for env in env_list:
+        print("Running on environment: " + env.name)
+        for algo in algo_list:
+            print("Running algo: " + algo.name)
+            legend.append(algo.name + " in " + env.name)
+            for i in range(nb_runs):
+                main_loop = MainLoop(nb_steps, env, algo)
+                main_loop.findBestArm()
+                total_regrets = main_loop.getTotalRegMemory()
+                for j in range(nb_steps):
+                    all_reg_means[exp_id][j] += (total_regrets[j] - all_reg_means[exp_id][j])/(i+1)
+                if (nb_runs >= 1000 and i % (nb_runs/500) == 0) or (nb_runs <= 1000 and i % (nb_runs/10) == 0):
+                    print(i * 100 / nb_runs)
+            print(str(env.name) + ": average total of regret after " + str(nb_steps) + " steps and " + str(nb_runs) + " runs is : " + str(all_reg_means[exp_id][-1]))
+            exp_id += 1
+
+    drawer.saveMultiCSV(exp_name, all_reg_means, legend)
+    drawer.saveMultiPlotPNG(range(nb_steps), all_reg_means, "steps", "Regret", "Comparison of average regrets over " + str(nb_runs), legend)
 
 
 
 if __name__ == "__main__":
 
     NB_RUNS = 2000
-    EXP_NAME = "05_02_19_2b"
-    ENVIRONMENT = CertainRewardEnvironment()
-    TASK = "RegretMinEnvsCompare"  # "BestArmIDPickProb" "BestArmIDFinTime"
+    EXP_NAME = "19-02-07_6a"
+    TASK = "RegretMinCompare"  # "BestArmIDPickProb" "BestArmIDFinTime"
 
 
     # Best arm identification parameters
     if TASK == "BestArmIDPickProb":
+        ENVIRONMENT = CertainRewardEnvironment()
         DELTA = 0.1
         EPSILON = 0.01
         FIXED_NB_H1 = 80
@@ -286,12 +316,14 @@ if __name__ == "__main__":
         comparePickingProbabilities(FIXED_NB_H1, NB_RUNS, EXP_NAME, ENVIRONMENT, ALGO)
 
     elif TASK == "BestArmIDFinTime":
+        ENVIRONMENT = CertainRewardEnvironment()
         DELTA = 0.1
         EPSILON = 0.01
         ALGO = ModifiedActionEliminationAlgo(DELTA, EPSILON, ENVIRONMENT.getOmega())
         averageFinishingTime(NB_RUNS, ENVIRONMENT, ALGO)
 
     elif TASK == "RegretMinAlgosCompare":
+        ENVIRONMENT = UncertainRewardEnvironment6()
         EPSILON = 0.5
         DECAY = 0.995
         NB_STEPS = 1000
@@ -300,14 +332,24 @@ if __name__ == "__main__":
         compareAverageRegretsAlgos(NB_RUNS, EXP_NAME, ENVIRONMENT, ALGO1, ALGO2, NB_STEPS)
 
     elif TASK == "RegretMinEnvsCompare":
-        ENV1 = CertainRewardEnvironment()
-        ENV2 = UncertainRewardEnvironment()
+        ENV1 = UncertainRewardEnvironment8()
+        ENV2 = UncertainRewardEnvironment9()
         EPSILON = 0.5
         DECAY = 0.995
         NB_STEPS = 1000
-        ALGO = ModifiedEpsilonGreedyAlgo(EPSILON, DECAY, ENVIRONMENT.getOmega())
+        ALGO = EpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())
         compareAverageRegretsEnvs(NB_RUNS, EXP_NAME, ENV1, ENV2, ALGO, NB_STEPS)
-    # Regret 
 
+    elif TASK == "RegretMinCompare":
+        ENV1 = TryEnvironment()
+        ENV2 = UncertainRewardEnvironment8()
+        ENV3 = UncertainRewardEnvironment9()
+        EPSILON = 0.5
+        DECAY = 0.995
+        NB_STEPS = 1000
+        ALGO1 = EpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())
+        ALGO0 = ModifiedEpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())
+        ALGO2 = CheatingEpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())
+        compareAverageRegretsGeneral(NB_RUNS, EXP_NAME, [ENV1, ENV2, ENV3], [ALGO0, ALGO1, ALGO2], NB_STEPS)
 
 
