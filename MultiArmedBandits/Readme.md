@@ -25,14 +25,15 @@ You can change some experiment parameters using the variables in the ` if __name
 
 Then, you must change the parameters in the task definitions.
 For `AlgoEnvCompare`:
-  *     `NB_STEPS` : number of time steps you want to test your algorithm on.
-  *     `ENV1`: choose one of the environments you want to test your algorithm on. Example: `UncertainRewardEnvironment()`, or `CertainRewardEnvironment()`.
-  *     `ENV2`: you can put several enviroments, as many as you want!
-  *     `EPSILON`: this is the initial value of epsilon in if you use an epsilon-greedy algo.
-  *     `DECAY`: the epsilon decay factor of your epsilon-greedy algo
-  *     `ALGO1`: Choose one of the algorithms you want to test. Example: `EpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())` or `ModifiedEpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())`
-  *     `ALGO2`: you can test several algorithms, as many as you want!
-  *     `DO_LIST`: allows you to choose which combination of algo/environment you want to test. For example: `[[1, 1], [0, 1]]` will run `ALGO1` on `ENV1` and `ENV2` but `ALGO2` only on `ENV2`.
+
+  * `NB_STEPS` : number of time steps you want to test your algorithm on.
+  * `ENV1`: choose one of the environments you want to test your algorithm on. Example: `UncertainRewardEnvironment()`, or `CertainRewardEnvironment()`.
+  * `ENV2`: you can put several enviroments, as many as you want!
+  * `EPSILON`: this is the initial value of epsilon in if you use an epsilon-greedy algo.
+  * `DECAY`: the epsilon decay factor of your epsilon-greedy algo
+  * `ALGO1`: Choose one of the algorithms you want to test. Example: `EpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())` or `ModifiedEpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())`
+  * `ALGO2`: you can test several algorithms, as many as you want!
+  * `DO_LIST`: allows you to choose which combination of algo/environment you want to test. For example: `[[1, 1], [0, 1]]` will run `ALGO1` on `ENV1` and `ENV2` but `ALGO2` only on `ENV2`.
 
 Don't forget to update the `compareAlgosEnv(NB_RUNS, EXP_NAME, [ENV1, ENV2, ENV3], [ALGO0, ALGO1, ALGO2], NB_STEPS, DO_LIST)` function with the right environments and algo lists.
 
