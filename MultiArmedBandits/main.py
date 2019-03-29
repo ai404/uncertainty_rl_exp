@@ -50,7 +50,7 @@ class MainLoop():
             self.step += 1
 
 
-    def findBestArm(self):
+    def runLoop(self):
         # HERE: Choose the stop condition: algorithm has solved problem OR fixed number of steps (better to do averages per step)
         if not self.nb_steps:
             while not self.algo.isDone():
@@ -173,7 +173,7 @@ def comparePickingProbabilities(fixed_nb_h1, nb_runs, exp_name, environment, alg
     # Running the MainLoop nb_steps time and populating the sum_action_step matrix
     for i in range(nb_runs):
         main_loop = MainLoop(nb_steps, environment, algo)
-        main_loop.findBestArm()
+        main_loop.runLoop()
         action_mem = main_loop.getActionMemory()
         for time_step in range(len(action_mem)):
             action = action_mem[time_step]
@@ -197,7 +197,7 @@ def averageFinishingTime(nb_runs, environment, algo):
 
     for i in range(nb_runs):
         main_loop = MainLoop(False, environment, algo)
-        main_loop.findBestArm()
+        main_loop.runLoop()
         sum_nb_steps += main_loop.getStepsUsed()
         n += 1
         if (nb_runs >= 1000 and i % (nb_runs/500) == 0) or (nb_runs <= 1000 and i % (nb_runs/10) == 0):
@@ -242,7 +242,7 @@ def compareAlgosEnv(nb_runs, exp_name, env_list, algo_list, nb_steps, do_list = 
                 legend.append(algo.name + " in " + env.name) # Add "algo in env" in the legend
                 for i in range(nb_runs):                     # Starting the run
                     main_loop = MainLoop(nb_steps, env, algo)   # Start main loop
-                    main_loop.findBestArm()                     # Run until nb_steps is achieved
+                    main_loop.runLoop()                     # Run until nb_steps is achieved
                     total_regrets = main_loop.getTotalRegMemory()   # Get regret memory
                     best_move = main_loop.getBestMoveMemory()
                     mean_error_mem = main_loop.getEstMeanErrMemory()   # Get regret memory
@@ -291,7 +291,7 @@ def estimateMeanError(nb_runs, exp_name, env_list, algo_list, nb_steps, do_list 
                 legend.append(algo.name + " in " + env.name) # Add "algo in env" in the legend
                 for i in range(nb_runs):                     # Starting the run
                     main_loop = MainLoop(nb_steps, env, algo)   # Start main loop
-                    main_loop.findBestArm()                     # Run until nb_steps is achieved
+                    main_loop.runLoop()                     # Run until nb_steps is achieved
                     mean_error_mem = main_loop.getEstMeanErrMemory()   # Get regret memory
                     for j in range(nb_steps):                   # For each step
                         all_means_errors[exp_id][j] += (mean_error_mem[j] - all_means_errors[exp_id][j])/(i+1) # Update the regret mean
@@ -312,7 +312,7 @@ if __name__ == "__main__":
     TASK = "AlgoEnvCompare"  # "BestArmIDPickProb" "BestArmIDFinTime" "AlgoEnvCompare" "MeanEstError"
 
 
-    # Best arm identification parameters
+    # Task definitions:
     if TASK == "BestArmIDPickProb":
         ENVIRONMENT = CertainRewardEnvironment()
         DELTA = 0.1
