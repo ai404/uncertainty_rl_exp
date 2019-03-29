@@ -18,27 +18,36 @@ In a terminal window, from `.../uncertainty_rl_exp/MultiArmedBandits`, run:
 The results will be saved in the `/experiments` repository.
 
 ### How to change the parameters
-You can change some experiment parameters using the global variables in *main.py*:
+You can change some experiment parameters using the variables in the ` if __name__ == "__main__":` part of *main.py*:
   * `EXP_NAME`: changes the name of the experiment. It will be the name on the plot as well as the name of the folder in which the results will be saved in the `/experiments` repository.
   * `NB_RUNS`: changes the amount of runs for which the algorithm is trained. More runs mean a more defined average score but also a longer computation time.
-  * `NB_ARMS`: it is the amount of arms in the environment class. Yes, it could easily be automatically set. But did not do it yet. Don't forget to set it right :)
-  * `ENVIRONMENT`: it is the environment class that you want to use (see Files section for more details)
-  * `FIXED_NB_H1`: it is the amount of steps as a function of the problem copmlexity (H1) that you want to go through at each training episode.
+  * `TASK`: it is the task you want to achieve (`AlgoEnvCompare` compares different algos on different environments based on regret, best move probability and mean square estimated error)
 
-In *main.py*, you can change the algorithm you wish to use in the `MainLoop __init__` function:
-  * `self.algo = CHOOSEAlgo(self.delta, self.epsilon, self.omega)`
+Then, you must change the parameters in the task definitions.
+For `AlgoEnvCompare`:
+  *     `NB_STEPS` : number of time steps you want to test your algorithm on.
+  *     `ENV1`: choose one of the environments you want to test your algorithm on. Example: `UncertainRewardEnvironment()`, or `CertainRewardEnvironment()`.
+  *     `ENV2`: you can put several enviroments, as many as you want!
+  *     `EPSILON`: this is the initial value of epsilon in if you use an epsilon-greedy algo.
+  *     `DECAY`: the epsilon decay factor of your epsilon-greedy algo
+  *     `ALGO1`: Choose one of the algorithms you want to test. Example: `EpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())` or `ModifiedEpsilonGreedyAlgo(EPSILON, DECAY, ENV1.getOmega())`
+  *     `ALGO2`: you can test several algorithms, as many as you want!
+  *     `DO_LIST`: allows you to choose which combination of algo/environment you want to test. For example: `[[1, 1], [0, 1]]` will run `ALGO1` on `ENV1` and `ENV2` but `ALGO2` only on `ENV2`.
+
+Don't forget to update the `compareAlgosEnv(NB_RUNS, EXP_NAME, [ENV1, ENV2, ENV3], [ALGO0, ALGO1, ALGO2], NB_STEPS, DO_LIST)` function with the right environments and algo lists.
+
 
 
 ### Files
-  * *environment.py* contains two environment classes:
-    * `ArticleEnvironment` reproduces the 6 arms bandit described in the paper *Best-arm identification algorithms for multi-armed bandits in the fixed confidence setting*, by Kevin Jamieson and Robert Nowak, CISS, 2014
-    * `BookEnvironment` reproduces the 10 arms bandit testbed described in the Reinforcement Learning book by Sutton and Barto.
-  * *algorithms.py* contains three algorithm classes, taking as arguments *epsilon*, *delta* the confidence, and *omega* the set of possible arms:, 
-    * `ActionEliminationAlgo` reproduces the Action Elimination algorithm as described in the paper.
-    * `UCBAlgo` reproduces the UCB algorithm as described in the paper.
-    * `LUCBAlgo` reproduces the LUCB algorithm as described in the paper.
-  * *utils.py* contains some utility functions used by the algorithms or the plotting program, including the `UFunction` and `CFunction` as defined in the paper.
+  * *environment.py* contains several environment classes, with different characteristics.
+    * `CertainRewardEnvironment` and its family hands out the reward with a fix variance (it is not perfectly named, I know)
+    * `UncertainRewardEnvironment` and its family hands out the reward with a changing variance (not perfeclty named neither)
+  * *algorithms.py* contains the algorithm classes, for now epsilon-greedy:
+    * `EpsilonGreedyAlgo` is a simple epsilon greedy updating the expected reward of the arms with an unweighted average.
+    * `ModifiedEpsilonGreedyAlgo` is the same BUT updates the expected reward using an inverse-variance weighted average.
+    * `CheatingEpsilonGreedyAlgo` always knows the best action when greedy - but still expores with probability epsilon.
+  * *utils.py* contains some utility functions used by the algorithms or the plotting program.
   * *main.py* is the main file running the whole code. It includes two classes:
-    * `MainLoop` is where one episode is run. You can change the end condition (number of steps, or solved condition achieved) in the `findBestArm` function.
-    * `Drawer` is where the result plots are created and saved. It could also save csv files - but this has not been implemented yet.
-    
+    * `MainLoop` is where one episode is run.   
+    * `Drawer` is where the result plots and the corresponding csv files are created and saved.
+  * *drawdistrib.py* is a helper file that can be used to sample probability distributions and draw them.
