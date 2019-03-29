@@ -82,7 +82,7 @@ class CertainRewardEnvironment(BaseEnvironment):
         self.variance = 0.6
         self.std_dev = math.sqrt(self.variance)
         self.omega = {1, 2, 3, 4}
-        self.name = "fixed variance 4-arm bandit - " + str(self.means)
+        self.name = "4-arm bandit with fixed var: " + str(self.variance) + " - means: " + str(self.means)
 
     def draw(self, arm_id):
         mean = self.means[arm_id - 1] # mu_1: 1.0    mu_2: 0.8  ... mu_6: 0.0
@@ -112,7 +112,7 @@ class CertainRewardEnvironment2(BaseEnvironment):
         self.variance = 0.6
         self.std_dev = math.sqrt(self.variance)
         self.means = [0, 0.05, 0.85, 0.9]
-        self.name = "fixed variance 4-arm bandit - " + str(self.means)
+        self.name = "4-arm bandit with fixed var: " + str(self.variance) + " - means: " + str(self.means)
 
     def draw(self, arm_id):
         mean = self.means[arm_id - 1] # mu_1: 1.0    mu_2: 0.8  ... mu_6: 0.0
@@ -121,6 +121,32 @@ class CertainRewardEnvironment2(BaseEnvironment):
 
 
 
+class CertainRewardEnvironmentHigherVar(BaseEnvironment):
+    def __init__(self):
+        self.omega = {1, 2, 3, 4}
+        self.variance = 1
+        self.std_dev = math.sqrt(self.variance)
+        self.means = [0, 0.3, 0.6, 0.9]
+        self.name = "4-arm bandit with fixed var: " + str(self.variance) + " - means: " + str(self.means)
+
+    def draw(self, arm_id):
+        mean = self.means[arm_id - 1] # mu_1: 1.0    mu_2: 0.8  ... mu_6: 0.0
+        reward = np.random.normal(loc=mean, scale = self.std_dev)
+        return reward, self.variance
+
+
+class CertainRewardEnvironmentLowerVar(BaseEnvironment):
+    def __init__(self):
+        self.omega = {1, 2, 3, 4}
+        self.variance = 0.3
+        self.std_dev = math.sqrt(self.variance)
+        self.means = [0, 0.3, 0.6, 0.9]
+        self.name = "fixed variance 4-arm bandit with var: " + str(self.variance) + " - means: " + str(self.means)
+
+    def draw(self, arm_id):
+        mean = self.means[arm_id - 1] # mu_1: 1.0    mu_2: 0.8  ... mu_6: 0.0
+        reward = np.random.normal(loc=mean, scale = self.std_dev)
+        return reward, self.variance
 
 class UncertainRewardEnvironment2(BaseEnvironment):
     def __init__(self):
@@ -233,7 +259,7 @@ class UncertainRewardEnvironment9(BaseEnvironment):
 
     def draw(self, arm_id):
         mean = self.means[arm_id - 1]
-        variance = np.random.chisquare(3)/10 + 0.7      # Has a mean of 1, and a variance of 0.24
+        variance = np.random.chisquare(3)/10 + 0.7      # Has a mean of 1, and a variance of 0.06
 
         reward = np.random.normal(loc=mean, scale = math.sqrt(variance))
         return reward, variance
