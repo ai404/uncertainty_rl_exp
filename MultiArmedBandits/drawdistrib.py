@@ -4,6 +4,7 @@ import csv
 import os
 import copy
 import numpy as np
+import math
 
 
 
@@ -87,23 +88,60 @@ class Drawer():
 
 def countInDiscretizedList(number, a_list, low_lim, high_lim, coeff):
     step_size = (float(high_lim) - float(low_lim))/len(a_list)
-    index = int(number/step_size)
+    index = int((number-low_lim)/step_size)
     if index < len(a_list) and index >= 0:
         a_list[index] += coeff
 
 
 if __name__ == "__main__":
 
-    mat = [[0 for k in range(200)], [0 for k in range(200)], [0 for k in range(200)]]
+    mean = 2
+
+    mat = [[0 for k in range(100)], [0 for k in range(100)], [0 for k in range(100)], [0 for k in range(100)]]
+
+    v_1_avg = 0
+    v_2_avg = 0
+    v_3_avg = 0
+
+    draw_1_mem = []
+    draw_2_mem = []
+    draw_3_mem = []
+    draw_4_mem = []
+
     for i in range(1000000):
-        countInDiscretizedList(np.random.chisquare(3)/3, mat[0], 0, 3, 1.0/10000)
-        countInDiscretizedList(np.random.chisquare(3)/5 + 0.4, mat[1], 0, 3, 1.0/10000)
-        countInDiscretizedList(np.random.chisquare(3)/10 + 0.7, mat[2], 0, 3, 1.0/10000)
+        v_1 = np.random.chisquare(3)/3
+        v_1_avg += (v_1 - v_1_avg)/(i+1)
+        v_2 = np.random.chisquare(3)/5 + 0.4
+        v_2_avg += (v_2 - v_2_avg)/(i+1)
+        v_3 = np.random.chisquare(3)/10 + 0.7
+        v_3_avg += (v_3 - v_3_avg)/(i+1)
+
+        draw_1 = np.random.normal(loc = mean, scale = 1)
+        draw_2 = np.random.normal(loc = mean, scale = math.sqrt(v_1))
+        draw_3 = np.random.normal(loc = mean, scale = math.sqrt(v_2))
+        draw_4 = np.random.normal(loc = mean, scale = math.sqrt(v_3))
+        countInDiscretizedList(draw_1, mat[0], 0, 4, 1.0/1000000)
+        countInDiscretizedList(draw_2, mat[1], 0, 4, 1.0/1000000)
+        countInDiscretizedList(draw_3, mat[2], 0, 4, 1.0/1000000)
+        countInDiscretizedList(draw_4, mat[3], 0, 4, 1.0/1000000)
+        draw_1_mem.append(draw_1)
+        draw_2_mem.append(draw_2)
+        draw_3_mem.append(draw_3)
+        draw_4_mem.append(draw_4)
+
     
     drawer = Drawer("TraceProbaDistros")
-    x = [float(i)/200 * 3 for i in range(200)]
-    drawer.saveMultiPlotPNG(x, mat, "Random variable", "Probability", "Probability distributions", ["X^2(3)/3", "X^2(3)/5 + 0.4", "X^2(3)/10 + 0.7"])
+    x = [float(i)/100 * 4 for i in range(100)]
+    drawer.saveMultiPlotPNG(x, mat, "Random variable", "Probability", "Probability distributions - Gaussians with random variance", ["N(2, 1)","N(2, X^2(3)/3)", "N(2, X^2(3)/5 + 0.4)", "N(2, X^2(3)/10 + 0.7)"])
 
+    var_draw_1 = np.var(draw_1_mem)
+    var_draw_2 = np.var(draw_2_mem)
+    var_draw_3 = np.var(draw_3_mem)
+    var_draw_4 = np.var(draw_4_mem)
 
+    print("var_draw_1: " + str(var_draw_1))
+    print("var_draw_2: " + str(var_draw_2))
+    print("var_draw_3: " + str(var_draw_3))
+    print("var_draw_4: " + str(var_draw_4))
 
 
