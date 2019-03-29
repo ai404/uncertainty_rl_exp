@@ -451,7 +451,7 @@ class ModifiedEpsilonGreedyAlgo(EpsilonGreedyAlgo):
 
     def update(self, arm_id, reward, var):
         self.received_rewards[arm_id - 1].append(reward)
-        weight = 0.1 + 0.54/var
+        weight = 1/var
         self.received_rewards_weights[arm_id - 1].append(weight)
         self.est_means[arm_id - 1] = (self.est_means[arm_id - 1] * self.total_weight[arm_id - 1] + reward * weight)/(self.total_weight[arm_id - 1] + weight) #np.average(self.received_rewards[arm_id - 1], weights = self.received_rewards_weights[arm_id - 1])
         self.total_weight[arm_id - 1] += weight
