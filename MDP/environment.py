@@ -109,7 +109,7 @@ class TabularEnv(gym.Env):
         elif mode =="ansi":
             for y in range(self.grid_y):
                 print("|",end="")
-                for x in range(self.grid_y):
+                for x in range(self.grid_x):
                     s = self._coords2idx(x,y)
                     if self.current_state == s:
                         print(bcolors.AGENT+" A "+bcolors.ENDC,end="")
