@@ -107,7 +107,7 @@ class Drawer():
         output_path = self.output_path_root + "/" + plot_title + ".png"
         plt.savefig(output_path, bbox_inches="tight")
 
-    def saveMultiPlotPNG(self, x, y_list, x_label, y_label, plot_title, legend = False):
+    def saveMultiPlotPNG(self, x, y_list, x_label, y_label, plot_title, legend = False, ylimit = False):
         plt.subplots()
         for y_id in range(len(y_list)):
             y = y_list[y_id]
@@ -117,6 +117,8 @@ class Drawer():
         if legend:
             plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
           fancybox=True, shadow=True)
+        if ylimit:
+            plt.ylim(top=ylimit)  # adjust the top leaving bottom unchanged
         plt.title(plot_title)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
@@ -262,7 +264,7 @@ def compareAlgosEnv(nb_runs, exp_name, env_list, algo_list, nb_steps, do_list = 
     drawer.saveMultiCSV(exp_name + "_mean_est_error", all_means_errors, legend) # Save CSV
     drawer.saveMultiPlotPNG(range(nb_steps), all_reg_means, "steps", "Regret", "Comparison of average regrets over " + str(nb_runs), legend) # Save regret plot
     drawer.saveMultiPlotPNG(range(nb_steps), best_move_prob, "steps", "Probability of best move", "Best move probability over " + str(nb_runs), legend) # Save best move proba plot
-    drawer.saveMultiPlotPNG(range(nb_steps), all_means_errors, "steps", "L2 error on estimated means", "Average error on estimated means on " + str(nb_runs), legend) # Save regret plot
+    drawer.saveMultiPlotPNG(range(nb_steps), all_means_errors, "steps", "L2 error on estimated means", "Average error on estimated means on " + str(nb_runs), legend, 0.5) # Save error plot
 
 
 def estimateMeanError(nb_runs, exp_name, env_list, algo_list, nb_steps, do_list = False):
