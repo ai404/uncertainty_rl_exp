@@ -19,7 +19,6 @@ class Drawer():
         nb_arms = len(sum_action_step)
         for i in range(nb_arms):
             y = sum_action_step[i]
-            y = smoothen(y)
             plt.plot(x, y)
         plt.title(plot_title)
         plt.xlabel(x_label)
@@ -40,7 +39,6 @@ class Drawer():
         plt.subplots()
         for y_id in range(len(y_list)):
             y = y_list[y_id]
-            y_smooth = smoothen(y)
             if legend:
                 plt.plot(x,y, label = legend[y_id])
         if legend:
@@ -114,3 +112,16 @@ def getSoftmaxProbas(list_action, list_q, temperature):
         list_proba[i] = math.exp(q / temperature)   # compute each term
     list_proba = list_proba/(np.sum(list_proba))    # normalize
     return list_proba
+
+
+def drawChiSquare(mean, variance):
+    basic_var = 6
+    basic_mean = 3
+
+
+    a = np.sqrt(variance/basic_var)
+    b = mean - basic_mean*a
+
+    assert b >= 0, "Variance and mean in drawChiSquare will lead to potential negative sampling: a = " + str(a) + " and b = " + str(b)
+
+    return np.random.chisquare(3)*a + b      # Has a mean of 0.6, and a variance of 1/6
