@@ -1,6 +1,7 @@
 import numpy as np
 
 import gym
+from utils import *
 from gym import spaces
 from collections import defaultdict
 
@@ -20,15 +21,19 @@ class bcolors:
 class TabularEnv(gym.Env):
     metadata = {'render.modes': ['human','ansi']}
     
-    def __init__(self,grid_x=10,grid_y=10,n_coins=10,seed=42):
+    def __init__(self,grid_x=5,grid_y=5,n_coins=0,seed=42, max_steps = 10000):
         self.grid_x = grid_x
         self.grid_y = grid_y
         self.action_space = spaces.Discrete(4)# The Space object corresponding to valid actions
         self.observation_space = spaces.Discrete(grid_x*grid_y)# The Space object corresponding to valid observations
-        
-        self.init_state = 0
-        self.done = False
+
+        self.init_state = np.random.choice(range(grid_x*grid_y))
         self.current_state = self.init_state
+
+        self.max_steps = max_steps
+        self.step_count = 0
+
+        self.done = False
         self.n_coins = n_coins
         self.seed(seed)
         self.init_grid()
@@ -36,7 +41,9 @@ class TabularEnv(gym.Env):
     def init_grid(self):
         probs = np.ones(self.observation_space.n)/(self.observation_space.n - 1)
         probs[self.init_state] = 0
-        self.terminal_state = np.random.choice(self.observation_space.n,1,p=probs)
+        self.terminal_state = self.init_state # Will be changed just afterwards
+        while self.terminal_state == self.init_state:  # Making sure terminal state is not initial state
+            self.terminal_state =  np.random.choice([0, self.grid_x -1, (self.grid_y-1)*self.grid_x, self.grid_x*self.grid_y - 1]) # 4 corners
         
         probs[self.terminal_state] = 0
         probs/=sum(probs)
@@ -50,9 +57,13 @@ class TabularEnv(gym.Env):
     
     def _coords2idx(self,x,y):
         return y*self.grid_x + x
-    
+
+    def getCurrentState(self):
+        return self.current_state * 10**(np.ceil(np.log10(self.grid_x*self.grid_y))) + self.terminal_state
+
     def step(self, action):
         assert self.action_space.contains(action)
+        self.step_count += 1
 
         x,y = self._idx2coords(self.current_state)
 
@@ -67,26 +78,25 @@ class TabularEnv(gym.Env):
 
         self.current_state = self._coords2idx(x,y)
         
-        if self.current_state == self.terminal_state:
-            self.close()
+        reward, reward_noise, reward_var = self._get_reward()
 
-        reward = self._get_reward()
-        return self.current_state, reward, self.done, None
+        if self.current_state == self.terminal_state:
+            #print("Reached terminal_state in " + str(self.step_count))
+            reward, reward_noise, reward_var = self.close("term")
+
+        if self.step_count >= self.max_steps:
+            #print("Reached maximal steps number")
+            reward, reward_noise, reward_var = self.close("max_steps")
+
+        return self.getCurrentState(), reward, reward_noise, reward_var, self.done
 
     def _get_reward(self):
-        if self.coins_indexes[self.current_state] ==1:
-            # self.coins_indexes[state] = 1 means that current position contains a coin
-            # = 0 nothing or {S,T}
-            # = -1 if there WAS a coin
-            # if there's a coin in the current position get the coin
-            self.coins_indexes[self.current_state] = -1
-            # TODO calculate the reward when the Agent collects a Coin
-        
-        # TODO penalize the Agent for each move
-        return 0
+        # Reward, reward noise, reward noise var
+        return 0, 0, 0
     
     def reset(self):
         self.done = False
+        self.step_count = 0
         self.current_state = self.init_state
         self.init_grid()
 
@@ -125,13 +135,44 @@ class TabularEnv(gym.Env):
                         print(" . ",end="")
                 print("|")
         print()
-    def close(self):
+
+    def close(self, reason):
         self.done = True
-        return
+        reward, reward_noise, reward_var = self._get_reward(reason)
+        return reward, reward_noise, reward_var
     
     def seed(self, seed=None):
         if seed:
             np.random.seed(seed)
+
+
+class SparseTabularEnvironment(TabularEnv):
+    """docstring for SparseTabularEnvironment"""
+    def __init__(self, grid_x=5,grid_y=5, reward_var_mean = None, reward_var_var = None):
+        super().__init__(grid_x, grid_y)
+        if reward_var_mean:
+            assert reward_var_var, "You need to define variance of reward variance if you define its mean"
+        self.reward_var_mean = reward_var_mean
+        self.reward_var_var = reward_var_var
+    
+
+    def _get_reward(self, closing_reason = False):
+        if closing_reason == "max_steps":
+            return -100000, 0, 0
+
+        elif self.current_state == self.terminal_state:
+            reward_mean = 1000 + self.grid_x*self.grid_y - self.step_count    # size of grid - number of steps
+            
+            if self.reward_var_mean and self.reward_var_var:
+                reward_var = drawChiSquare(self.reward_var_mean, self.reward_var_var)
+                reward_noise = np.random.normal(loc = 0, scale = np.sqrt(reward_var))
+            else:
+                reward_var = None
+                reward = reward_mean
+
+            return reward_mean, reward_noise, reward_var
+        else:
+            return 0, 0, 1
 
 
 if __name__ == "__main__":

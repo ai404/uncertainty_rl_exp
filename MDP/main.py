@@ -1,7 +1,7 @@
-from environments import *
+from environment import *
 from algorithms import *
 from utils import *
-
+import time
 
 
 class Trainer(object):
@@ -10,19 +10,22 @@ class Trainer(object):
         self.algo = algo
         self.drawer = drawer
 
-
-    def trainOneEpisode(self):
+    def trainOneEpisode(self, render = False):
+        #print(" -------- New episode -------")
         self.algo.partialReset()
         done = 0
         state = self.env.reset()
         action = self.algo.nextAct(state)
         while not done:
-            next_state, reward, done, _ = self.env.step(action)
+            next_state, reward, reward_noise, reward_var, done = self.env.step(action)
             next_action = self.algo.nextAct(next_state)
-            self.algo.update([state, action, reward, next_state, next_action])
+            self.algo.update([state, action, reward, reward_noise, reward_var, next_state, next_action])
             state = next_state
             action = next_action
+            if render: 
+                env.render()
         return self.algo.getReturn()
+
 
     def testOneEpisode(self, learn = False, render = False):
         self.algo.partialReset()
@@ -33,66 +36,57 @@ class Trainer(object):
             print(" -------- New episode -------")
             env.render()
         while not done:
-            next_state, reward, done, _ = self.env.step(action)
+            next_state, reward, reward_var, done = self.env.step(action)
             if render: 
                 env.render()
             next_action = self.algo.nextGreedyAct(next_state)
-            if learn: self.algo.update([state, action, reward, next_state, next_action])
+            if learn: self.algo.update([state, action, reward, reward_var, next_state, next_action])
             else: self.algo.updateNoLearn(reward)
             state = next_state
             action = next_action
         ret = self.algo.getReturn()
         return self.algo.getReturn()
 
- #    def evalAvgReturn(self, numbers, learn):
- #        nb_runs = numbers[0]
- #        nb_segments = numbers[1]
- #        nb_episodes = numbers[2]
- #        avg_train_ret = 0
- #        avg_test_ret = 0
-
- #        test_returns = []
- #        for run in range(nb_runs):
- #            print("Training run:" + str(run))
-
- #            self.algo.reset()
- #            for seg in range(nb_segments - 1):
- #                # Training episodes
- #                for episode in range(nb_episodes):
- #                    self.trainOneEpisode()
- #                test_returns.append(self.testOneEpisode())
-
- #            # Getting "training data" in the last segment
- #            for episode in range(nb_episodes):
- #                train_ret = self.trainOneEpisode()
- #                avg_train_ret += (train_ret - avg_train_ret)/(run*nb_episodes + episode + 1)
-
-
- #            # Geting "testing data" with greedy policy after training
- #            for episode in range(1):
- #                test_ret = self.testOneEpisode(learn = learn)
- #                avg_test_ret += (test_ret - avg_test_ret)/(run*10 + episode + 1)   
- #                test_returns.append(test_ret)     
-
-	# return avg_train_ret, avg_test_ret, test_returns
+    def evalAvgReturn(self, numbers, learn):
+        nb_runs = numbers[0]
+        nb_episodes = numbers[1]
+       
+        train_returns = [0 for i in range(nb_episodes)]
+        for run in range(nb_runs):
+            print("Training run:" + str(run))
+            self.algo.reset()
+            for episode in range(nb_episodes):
+                train_returns[episode] += (self.trainOneEpisode()-train_returns[episode])/(run+1)
+        return train_returns
 
 
 
 if __name__ == '__main__':
-	env = SparseGridWorld(4)
-	action_list = env.action_list
-	temperature = 1
-	alpha = 0.3
-	gamma = 1
+    rew_var_mean = 100000
+    rew_var_var = 1
+    env = SparseTabularEnvironment(6, 6, rew_var_mean, rew_var_var)
+    action_space = env.action_space
+    alpha = 0.3
+    temperature = 1
+    gamma = 1
 
-	algo_params = {"action_list": action_list, "temperature": temperature, "alpha":alpha, "gamma":gamma}
+    exp_name = "First_try"
+    learn = True
 
-	algo = RandomAgent(env, algo_params)
-	env.render()
+    nb_runs = 500
+    nb_episodes = 100
 
+    avgs_train = []
+    avgs_test = []
 
-	while not env.isDone():
-		env.act(algo.nextAct(env.getState))
-		env.render()
+    algo_params = {"action_space": action_space, "temperature": temperature, "alpha":alpha, "gamma":gamma}
+    algo = Sarsa(env, algo_params)
 
+    drawer = Drawer(exp_name)
+   
+    trainer = Trainer(env, algo, drawer)
+    train_returns = trainer.evalAvgReturn([nb_runs, nb_episodes], learn)
+    
+    print(train_returns)
 
+    drawer.savePlotPNG(range(len(train_returns)), train_returns, "Episode", "Average return", "Sparse task: average return on training using algo: " + algo.getName() + ", reward var mean: " + str(rew_var_mean) + ", reward var var: " + str(rew_var_var))

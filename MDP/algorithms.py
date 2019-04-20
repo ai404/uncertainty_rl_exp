@@ -7,11 +7,12 @@ class TDAgent_Q(object):
     def __init__(self, environment, parameters):
         self.env = environment
         self.params = parameters
-        self.action_list = self.params["action_list"]
-        self.nb_actions = len(self.action_list)
+        self.action_space = self.params["action_space"]
+        self.action_list = range(self.action_space.n)
+        self.nb_actions = self.action_space.n
         self.name = "Base algo"
         self.q_values = {}
-        self.default_q = 0
+        self.default_q = -100
         self.ret = 0
 
     def setQValue(self, state, action, value):
@@ -22,7 +23,7 @@ class TDAgent_Q(object):
             self.q_values[state][action] = value
 
     def getQValue(self, state, action):
-        assert action <= self.nb_actions
+        assert action <= self.nb_actions, "Action " + str(action) + " is too big. Max is: " + str(self.nb_actions)
         if state in self.q_values:
             return self.q_values[state][action]
         else:
@@ -90,15 +91,47 @@ class Sarsa(TDAgent_Q):
         S = info[0]
         A = info[1]
         R = info[2]
-        Sn = info[3]
-        An = info[4]
+        R_noise = info[3]
+        R_var = info[4]
+        Sn = info[5]
+        An = info[6]
+
+        self.ret += R
+        R = R + R_noise # Add the noise on R
 
         q_sa = self.getQValue(S, A)
         q_sn_an = self.getQValue(Sn, An)
         new_q = q_sa + self.alpha * (R + self.gamma * q_sn_an - q_sa)
         self.setQValue(S, A, new_q)
 
+
+class ModifiedSarsa(TDAgent_Q):
+    # TODO: modify it!
+    def __init__(self, environment, parameters):
+        super().__init__(environment, parameters)
+        self.temperature = self.params["temperature"]
+        self.alpha = self.params["alpha"]
+        self.gamma = self.params["gamma"]
+        self.default_q = 0
+        self.name = "Sarsa"
+
+    def update(self, info):
+        S = info[0]
+        A = info[1]
+        R = info[2]
+        R_noise = info[3]
+        R_var = info[4]
+        Sn = info[5]
+        An = info[6]
+
         self.ret += R
+        R = R + R_noise # Add the noise on R
+
+        q_sa = self.getQValue(S, A)
+        q_sn_an = self.getQValue(Sn, An)
+        new_q = q_sa + self.alpha * (R + self.gamma * q_sn_an - q_sa)
+        self.setQValue(S, A, new_q)
+
 
 class QLearning(TDAgent_Q):
     def __init__(self, environment, parameters):
@@ -113,15 +146,18 @@ class QLearning(TDAgent_Q):
         S = info[0]
         A = info[1]
         R = info[2]
-        Sn = info[3]
-        #An = info[4]
+        R_noise = info[3]
+        R_var = info[4]
+        Sn = info[5]
+        An = info[6]
+
+        self.ret += R
+        R = R + R_noise # Add the noise on R
 
         q_sa = self.getQValue(S, A)
         max_q_sn_an = max(self.getStateQValues(Sn))
         new_q = q_sa + self.alpha * (R + self.gamma * max_q_sn_an - q_sa)
         self.setQValue(S, A, new_q)
-
-        self.ret += R
 
 class ExpectedSarsa(TDAgent_Q):
     def __init__(self, environment, parameters):
@@ -136,8 +172,13 @@ class ExpectedSarsa(TDAgent_Q):
         S = info[0]
         A = info[1]
         R = info[2]
-        Sn = info[3]
-        #An = info[4]
+        R_noise = info[3]
+        R_var = info[4]
+        Sn = info[5]
+        An = info[6]
+
+        self.ret += R
+        R = R + R_noise # Add the noise on R
 
         q_sa = self.getQValue(S, A)
         sn_q_vals = self.getStateQValues(Sn)
@@ -145,5 +186,3 @@ class ExpectedSarsa(TDAgent_Q):
         exp_q_sn_an = np.average(sn_q_vals, weights = list_proba)
         new_q = q_sa + self.alpha * (R + self.gamma * exp_q_sn_an - q_sa)
         self.setQValue(S, A, new_q)
-
-        self.ret += R
