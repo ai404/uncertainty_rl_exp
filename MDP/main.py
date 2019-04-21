@@ -5,10 +5,9 @@ import time
 
 
 class Trainer(object):
-    def __init__(self, env, algo, drawer):
+    def __init__(self, env, algo):
         self.env = env
         self.algo = algo
-        self.drawer = drawer
 
     def trainOneEpisode(self, render = False):
         #print(" -------- New episode -------")
@@ -26,28 +25,7 @@ class Trainer(object):
                 env.render()
         return self.algo.getReturn()
 
-
-    def testOneEpisode(self, learn = False, render = False):
-        self.algo.partialReset()
-        done = 0
-        state = self.env.reset()
-        action = self.algo.nextGreedyAct(state)
-        if render: 
-            print(" -------- New episode -------")
-            env.render()
-        while not done:
-            next_state, reward, reward_var, done = self.env.step(action)
-            if render: 
-                env.render()
-            next_action = self.algo.nextGreedyAct(next_state)
-            if learn: self.algo.update([state, action, reward, reward_var, next_state, next_action])
-            else: self.algo.updateNoLearn(reward)
-            state = next_state
-            action = next_action
-        ret = self.algo.getReturn()
-        return self.algo.getReturn()
-
-    def evalAvgReturn(self, numbers, learn):
+    def evalAvgReturn(self, numbers):
         nb_runs = numbers[0]
         nb_episodes = numbers[1]
        
@@ -62,31 +40,37 @@ class Trainer(object):
 
 
 if __name__ == '__main__':
-    rew_var_mean = 100000
-    rew_var_var = 1
-    env = SparseTabularEnvironment(6, 6, rew_var_mean, rew_var_var)
+    # Reward parameters
+    rew_var_mean_ter = 100000
+    rew_var_var_ter = 1
+    rew_var_mean_step = 100000
+    rew_var_var_step = 1
+    rew_params = {"reward_var_mean_ter": rew_var_mean_ter, "reward_var_var_ter": rew_var_var_ter, "reward_var_mean_step": rew_var_mean_step, "reward_var_var_step": rew_var_var_step}
+    
+    # Environment
+    env = SemiSparseTabularEnvironment(6, 6, rew_params)
     action_space = env.action_space
+
+    # Algorithm
     alpha = 0.3
     temperature = 1
     gamma = 1
+    algo_params = {"action_space": action_space, "temperature": temperature, "alpha":alpha, "gamma":gamma}
+    algo = Sarsa(env, algo_params)
 
-    exp_name = "First_try"
+    # Utilities
+   
+    # Experiment parameters
+    exp_name = "Second_try"
     learn = True
 
     nb_runs = 500
     nb_episodes = 100
 
-    avgs_train = []
-    avgs_test = []
-
-    algo_params = {"action_space": action_space, "temperature": temperature, "alpha":alpha, "gamma":gamma}
-    algo = Sarsa(env, algo_params)
-
-    drawer = Drawer(exp_name)
-   
-    trainer = Trainer(env, algo, drawer)
-    train_returns = trainer.evalAvgReturn([nb_runs, nb_episodes], learn)
+    # Experiment
+    trainer = Trainer(env, algo)
+    train_returns = trainer.evalAvgReturn([nb_runs, nb_episodes])
     
-    print(train_returns)
-
-    drawer.savePlotPNG(range(len(train_returns)), train_returns, "Episode", "Average return", "Sparse task: average return on training using algo: " + algo.getName() + ", reward var mean: " + str(rew_var_mean) + ", reward var var: " + str(rew_var_var))
+    # Plotting
+    drawer = Drawer(exp_name)
+    drawer.savePlotPNG(range(len(train_returns)), train_returns, "Episode", "Average return", env.getName() + ": return averaged on " + str(nb_runs) + " runs using " + algo.getName() + ", rew var mean: " + str(rew_var_mean) + ", rew var var: " + str(rew_var_var))
