@@ -165,7 +165,7 @@ class TabularEnv(gym.Env):
             reward_var = reward_var_mean
             reward_noise = np.random.normal(loc = 0, scale = np.sqrt(reward_var))
         else:
-            reward_var = 0
+            reward_var = None
             reward_noise = 0
                
         return reward_mean, reward_noise, reward_var
