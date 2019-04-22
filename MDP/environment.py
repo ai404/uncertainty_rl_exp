@@ -50,12 +50,6 @@ class TabularEnv(gym.Env):
         self.init_grid()
 
     def init_grid(self):
-        # Terminal state is drawn as one corner (different from current_state)
-        self.terminal_state = self.current_state # Will be changed just afterwards
-        while self.terminal_state == self.current_state:  # Making sure terminal state is not initial state
-            self.terminal_state =  np.random.choice([0, self.grid_x -1]) # 2 corners
-            #self.terminal_state =  np.random.choice([0, self.grid_x -1, (self.grid_y-1)*self.grid_x, self.grid_x*self.grid_y - 1]) # 4 corners
-
         self.terminal_state = 0
         # Indicator of state passed
         self.passed = [0 for i in range(self.grid_x*self.grid_y)]
