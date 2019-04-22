@@ -28,8 +28,9 @@ class TabularEnv(gym.Env):
         self.observation_space = spaces.Discrete(grid_x*grid_y)# The Space object corresponding to valid observations
 
         # Initialising state
-        self.init_state = np.random.choice(range(grid_x*grid_y))
-        self.current_state = self.init_state
+        self.current_state = np.random.choice(range(grid_x*grid_y))
+
+        print(self.current_state)
 
         # Step counting
         self.max_steps = max_steps
@@ -44,14 +45,16 @@ class TabularEnv(gym.Env):
         self.init_grid()
 
     def init_grid(self):
-        # Terminal state is drawn as one corner (different from init_state)
-        self.terminal_state = self.init_state # Will be changed just afterwards
-        while self.terminal_state == self.init_state:  # Making sure terminal state is not initial state
-            self.terminal_state =  np.random.choice([0, self.grid_x -1, (self.grid_y-1)*self.grid_x, self.grid_x*self.grid_y - 1]) # 4 corners
+        # Terminal state is drawn as one corner (different from current_state)
+        self.terminal_state = self.current_state # Will be changed just afterwards
+        while self.terminal_state == self.current_state:  # Making sure terminal state is not initial state
+            self.terminal_state =  np.random.choice([0, self.grid_x -1]) # 2 corners
+            #self.terminal_state =  np.random.choice([0, self.grid_x -1, (self.grid_y-1)*self.grid_x, self.grid_x*self.grid_y - 1]) # 4 corners
 
+        self.terminal_state = 0
         # Indicator of state passed
         self.passed = [0 for i in range(self.grid_x*self.grid_y)]
-        self.passed[self.init_state] = 1
+        self.passed[self.current_state] = 1
         
     def _idx2coords(self,index):
         return index%self.grid_x,index//self.grid_x
@@ -105,7 +108,9 @@ class TabularEnv(gym.Env):
     def reset(self):
         self.done = False
         self.step_count = 0
-        self.current_state = self.init_state
+        self.current_state = np.random.choice(range(self.grid_x*self.grid_y))
+        print(self.current_state)
+
         self.init_grid()
 
     def render(self, mode='ansi'):
@@ -182,10 +187,13 @@ class SparseTabularEnvironment(TabularEnv):
     def _get_reward(self, closing_reason = False):
         # Max steps
         if closing_reason == "max_steps":
-            return self.computeReward(-100000)
+            #print("Closing because max steps")
+
+            return self.computeReward(-2000)
 
         # Terminal state
         elif closing_reason == "term":
+            #print("Closing because terminal state")
             reward_mean = 1000 - self.step_count # End
             return self.computeReward(reward_mean, self.reward_var_mean_ter, self.reward_var_var_ter)
 
@@ -211,7 +219,7 @@ class SemiSparseTabularEnvironment(TabularEnv):
     def _get_reward(self, closing_reason = False):
         # Max steps
         if closing_reason == "max_steps":
-            return self.computeReward(-100000)
+            return self.computeReward(-2000)
 
         # Terminal state
         elif closing_reason == "term":
@@ -241,14 +249,14 @@ class DenseTabularEnvironment(TabularEnv):
 
 
     def init_grid(self):
-        # Terminal state is drawn as one corner (different from init_state)
-        self.terminal_state = self.init_state # Will be changed just afterwards
-        while self.terminal_state == self.init_state:  # Making sure terminal state is not initial state
+        # Terminal state is drawn as one corner (different from first current_state)
+        self.terminal_state = self.current_state # Will be changed just afterwards
+        while self.terminal_state == self.current_state:  # Making sure terminal state is not initial state
             self.terminal_state =  np.random.choice([0, self.grid_x -1, (self.grid_y-1)*self.grid_x, self.grid_x*self.grid_y - 1]) # 4 corners
 
         # Indicator of state passed
         self.passed = [0 for i in range(self.grid_x*self.grid_y)]
-        self.passed[self.init_state] = 1
+        self.passed[self.current_state] = 1
 
         self.state_reward = [np.random.choice(range(11)) for i in range(self.grid_x*self.grid_y)]
         self.state_reward[self.terminal_state] = 1000
@@ -257,7 +265,7 @@ class DenseTabularEnvironment(TabularEnv):
     def _get_reward(self, closing_reason = False):
         # Max steps
         if closing_reason == "max_steps":
-            return self.computeReward(-100000)
+            return self.computeReward(-2000)
 
         else:
             print(self.passed[self.current_state])
