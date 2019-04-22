@@ -21,7 +21,7 @@ class Agent_Q(object):
         if state in self.q_values:
             self.q_values[state][action] = value
         else:
-            self.q_values[state] = [0 for i in range(self.nb_actions)]
+            self.q_values[state] = [self.default_q for i in range(self.nb_actions)]
             self.q_values[state][action] = value
 
     def getQValue(self, state, action):
@@ -193,6 +193,85 @@ class MonteCarlo(Agent_Q):
         self.memory = []
 
 
+class ModifiedMonteCarlo(Agent_Q):
+    def __init__(self, parameters):
+        super().__init__(parameters)
+        self.temperature = self.params["temperature"]
+        self.alpha = self.params["alpha"]
+        self.gamma = self.params["gamma"]
+        self.default_q = 0
+        self.name = "Modified MonteCarlo"
+        self.memory = []
+        self.C = {}
+
+    def update(self, info):
+        S = info[0]
+        A = info[1]
+        R = info[2]
+        R_noise = info[3]
+        R_var = info[4]
+        done = info[7]
+
+        self.ret += R
+        R_seen = R + R_noise
+
+        if not done:
+            self.memory.append([S, A, R_seen, R_var])
+        else:
+            self.memory.append([S, A, R_seen, R_var])
+            G = 0
+            G_var = 0
+            while len(self.memory) > 0:
+                S_, A_, R_, R_var_ = self.memory.pop()
+                if [S_, A_, R_] in self.memory:   # First time MonteCarlo: don't do anything if already passed here
+                    G += R_
+                else:
+                    #print("R_: " + str(R_))
+                    G += R_
+                    #print("G: " + str(G))
+                    #print("R_var_: " + str(R_var_))
+                    if R_var_:
+                        G_var += R_var_
+                    #print("G_var: " + str(G_var))
+                    C = self.getCValue(S_, A_)
+                    #print("C before: " + str(C))
+                    if G_var:
+                        w = 1/G_var
+                        C += w
+                    else:
+                        w = 10**3
+                        C += w
+                    #print("C after: " + str(C))
+                    self.setCValue(S_, A_, C)
+
+                    q_sa = self.getQValue(S_, A_)
+                    new_q = q_sa + w/C*(G - q_sa)
+                    self.setQValue(S_, A_, new_q)
+
+
+            #assert 1 == 0
+
+    def setCValue(self, state, action, value):
+        if state in self.C:
+            self.C[state][action] = value
+        else:
+            self.C[state] = [0 for i in range(self.nb_actions)]
+            self.C[state][action] = value
+
+    def getCValue(self, state, action):
+        if state in self.C:
+            return self.C[state][action]
+        else:
+            return 0
+
+    def partialReset(self):
+        super().partialReset()
+        self.memory = []
+
+    def reset(self):
+        super().reset()
+        self.memory = []
+        self.C = {}
 
 
 
