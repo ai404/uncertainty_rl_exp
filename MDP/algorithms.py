@@ -1,11 +1,11 @@
 import random
 from utils import *
 import numpy as np
+import time
 
 
 class Agent_Q(object):
-    def __init__(self, environment, parameters):
-        self.env = environment
+    def __init__(self, parameters):
         self.params = parameters
         self.action_space = self.params["action_space"]
         self.action_list = range(self.action_space.n)
@@ -86,8 +86,8 @@ class Agent_Q(object):
         self.ret = 0
 
 class RandomAgent(Agent_Q):
-    def __init__(self, environment, parameters):
-        super().__init__(environment, parameters)
+    def __init__(self, parameters):
+        super().__init__(parameters)
         self.temperature = self.params["temperature"]
         self.name = "Random"
 
@@ -97,8 +97,8 @@ class RandomAgent(Agent_Q):
 
 
 class Sarsa(Agent_Q):
-    def __init__(self, environment, parameters):
-        super().__init__(environment, parameters)
+    def __init__(self, parameters):
+        super().__init__(parameters)
         self.temperature = self.params["temperature"]
         self.alpha = self.params["alpha"]
         self.gamma = self.params["gamma"]
@@ -125,8 +125,8 @@ class Sarsa(Agent_Q):
 
 class ModifiedSarsa(Agent_Q):
     # TODO: modify it!
-    def __init__(self, environment, parameters):
-        super().__init__(environment, parameters)
+    def __init__(self, parameters):
+        super().__init__(parameters)
         self.temperature = self.params["temperature"]
         self.alpha = self.params["alpha"]
         self.gamma = self.params["gamma"]
@@ -153,8 +153,8 @@ class ModifiedSarsa(Agent_Q):
 
 
 class MonteCarlo(Agent_Q):
-    def __init__(self, environment, parameters):
-        super().__init__(environment, parameters)
+    def __init__(self, parameters):
+        super().__init__(parameters)
         self.temperature = self.params["temperature"]
         self.alpha = self.params["alpha"]
         self.gamma = self.params["gamma"]
