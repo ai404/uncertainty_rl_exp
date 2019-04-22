@@ -17,6 +17,12 @@ class bcolors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
 
+class breward:
+    TERM = 1000
+    MAX_STEPS = -2000
+    STEP = -1
+    DENSE_RANGE = 11 # (reward going from 0 to DENSE_RANGE - 1)
+
 class TabularEnv(gym.Env):
     metadata = {'render.modes': ['human','ansi']}
     
@@ -189,12 +195,12 @@ class SparseTabularEnvironment(TabularEnv):
         if closing_reason == "max_steps":
             #print("Closing because max steps")
 
-            return self.computeReward(-2000)
+            return self.computeReward(breward.MAX_STEPS)
 
         # Terminal state
         elif closing_reason == "term":
             #print("Closing because terminal state")
-            reward_mean = 1000 - self.step_count # End
+            reward_mean = breward.TERM + self.step_count*breward.STEP # End
             return self.computeReward(reward_mean, self.reward_var_mean_ter, self.reward_var_var_ter)
 
         else:
@@ -219,16 +225,16 @@ class SemiSparseTabularEnvironment(TabularEnv):
     def _get_reward(self, closing_reason = False):
         # Max steps
         if closing_reason == "max_steps":
-            return self.computeReward(-2000)
+            return self.computeReward(breward.MAX_STEPS)
 
         # Terminal state
         elif closing_reason == "term":
-            reward_mean = 1000 # End
+            reward_mean = breward.TERM # End
             return self.computeReward(reward_mean, self.reward_var_mean_ter, self.reward_var_var_ter)
 
         # Normal step
         else:
-            reward_mean = -1
+            reward_mean = breward.STEP
             return self.computeReward(reward_mean, self.reward_var_mean_step, self.reward_var_var_step)
 
 class DenseTabularEnvironment(TabularEnv):
@@ -258,18 +264,17 @@ class DenseTabularEnvironment(TabularEnv):
         self.passed = [0 for i in range(self.grid_x*self.grid_y)]
         self.passed[self.current_state] = 1
 
-        self.state_reward = [np.random.choice(range(11)) for i in range(self.grid_x*self.grid_y)]
-        self.state_reward[self.terminal_state] = 1000
+        self.state_reward = [np.random.choice(range(breward.DENSE_RANGE)) for i in range(self.grid_x*self.grid_y)]
+        self.state_reward[self.terminal_state] = brewad.TERM
 
 
     def _get_reward(self, closing_reason = False):
         # Max steps
         if closing_reason == "max_steps":
-            return self.computeReward(-2000)
+            return self.computeReward(breward.MAX_STEPS)
 
         else:
-            print(self.passed[self.current_state])
-            reward_mean = (1-self.passed[self.current_state])*self.state_reward[self.current_state] - 1
+            reward_mean = (1-self.passed[self.current_state])*self.state_reward[self.current_state] + breward.STEP
             return self.computeReward(reward_mean, self.reward_var_mean_step, self.reward_var_var_step)
 
 
