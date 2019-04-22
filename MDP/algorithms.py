@@ -3,7 +3,7 @@ from utils import *
 import numpy as np
 
 
-class TDAgent_Q(object):
+class Agent_Q(object):
     def __init__(self, environment, parameters):
         self.env = environment
         self.params = parameters
@@ -67,7 +67,7 @@ class TDAgent_Q(object):
     def partialReset(self):
         self.ret = 0
 
-class RandomAgent(TDAgent_Q):
+class RandomAgent(Agent_Q):
     def __init__(self, environment, parameters):
         super().__init__(environment, parameters)
         self.temperature = self.params["temperature"]
@@ -78,7 +78,7 @@ class RandomAgent(TDAgent_Q):
         return action
 
 
-class Sarsa(TDAgent_Q):
+class Sarsa(Agent_Q):
     def __init__(self, environment, parameters):
         super().__init__(environment, parameters)
         self.temperature = self.params["temperature"]
@@ -105,7 +105,7 @@ class Sarsa(TDAgent_Q):
         self.setQValue(S, A, new_q)
 
 
-class ModifiedSarsa(TDAgent_Q):
+class ModifiedSarsa(Agent_Q):
     # TODO: modify it!
     def __init__(self, environment, parameters):
         super().__init__(environment, parameters)
@@ -133,7 +133,70 @@ class ModifiedSarsa(TDAgent_Q):
         self.setQValue(S, A, new_q)
 
 
-class QLearning(TDAgent_Q):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class MonteCarlo()        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+######### Other algorithms ###########
+
+class QLearning(Agent_Q):
     def __init__(self, environment, parameters):
         super().__init__(environment, parameters)
         self.temperature = self.params["temperature"]
@@ -159,7 +222,7 @@ class QLearning(TDAgent_Q):
         new_q = q_sa + self.alpha * (R + self.gamma * max_q_sn_an - q_sa)
         self.setQValue(S, A, new_q)
 
-class ExpectedSarsa(TDAgent_Q):
+class ExpectedSarsa(Agent_Q):
     def __init__(self, environment, parameters):
         super().__init__(environment, parameters)
         self.temperature = self.params["temperature"]

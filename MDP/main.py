@@ -18,7 +18,7 @@ class Trainer(object):
         while not done:
             next_state, reward, reward_noise, reward_var, done = self.env.step(action)
             next_action = self.algo.nextAct(next_state)
-            self.algo.update([state, action, reward, reward_noise, reward_var, next_state, next_action])
+            self.algo.update([state, action, reward, reward_noise, reward_var, next_state, next_action, done])
             state = next_state
             action = next_action
             if render: 
