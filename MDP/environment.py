@@ -18,7 +18,7 @@ class bcolors:
     BOLD = '\033[1m'
 
 class breward:
-    TERM = 1000
+    TERM = 100
     MAX_STEPS = -2000
     STEP = -1
     DENSE_RANGE = 11 # (reward going from 0 to DENSE_RANGE - 1)
