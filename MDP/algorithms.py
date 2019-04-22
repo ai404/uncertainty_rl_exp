@@ -12,8 +12,10 @@ class Agent_Q(object):
         self.nb_actions = self.action_space.n
         self.name = "Base algo"
         self.q_values = {}
-        self.default_q = -100
+        self.default_q = 0
         self.ret = 0
+        self.visits_number = {}
+
 
     def setQValue(self, state, action, value):
         if state in self.q_values:
@@ -35,14 +37,29 @@ class Agent_Q(object):
         else:
             return [self.default_q for i in range(self.nb_actions)]
 
+
+    def getVisitNumber(self, state, action):
+        # Number of time this state-action pair has been visited
+        assert action <= self.nb_actions, "Action " + str(action) + " is too big. Max is: " + str(self.nb_actions)
+        if state in self.visits_number:
+            return self.visits_number[state][action]
+        else:
+            return 0
+
+    def incrementVisitNumber(self, state, action):
+        # Increment the number of time this state action pair has been visited
+        if state in self.visits_number:
+            self.visits_number[state][action] += 1
+        else:
+            self.visits_number[state] = [0 for i in range(self.nb_actions)]
+            self.visits_number[state][action] = 1
+
+
     def update(self, info):
         pass
 
     def updateNoLearn(self, reward):
         self.ret += reward
-
-    def nextAct(self, state):
-        return 0
 
     def getName(self):
         return self.name
@@ -62,6 +79,7 @@ class Agent_Q(object):
 
     def reset(self):
         self.q_values = {}
+        self.visits_number = {}
         self.ret = 0
 
     def partialReset(self):
@@ -134,40 +152,45 @@ class ModifiedSarsa(Agent_Q):
 
 
 
+class MonteCarlo(Agent_Q):
+    def __init__(self, environment, parameters):
+        super().__init__(environment, parameters)
+        self.temperature = self.params["temperature"]
+        self.alpha = self.params["alpha"]
+        self.gamma = self.params["gamma"]
+        self.default_q = 0
+        self.name = "MonteCarlo"
+        self.memory = []
 
+    def update(self, info):
+        S = info[0]
+        A = info[1]
+        R = info[2]
+        R_noise = info[3]
+        R_var = info[4]
+        done = info[7]
 
+        self.ret += R
+        R_seen = R + R_noise
 
+        if not done:
+            self.memory.append([S, A, R_seen])
+        else:
+            self.memory.append([S, A, R_seen])
+            G = 0
+            while len(self.memory) > 0:
+                S_, A_, R_ = self.memory.pop()
+                if [S_, A_, R_] in self.memory:   # First time MonteCarlo
+                    G += R_
+                else:
+                    G += R_
+                    q_sa = self.getQValue(S_, A_)
+                    new_q = q_sa + self.alpha*(G - q_sa)
+                    self.setQValue(S_, A_, new_q)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-class MonteCarlo()        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def partialReset(self):
+        super().partialReset()
+        self.memory = []
 
 
 

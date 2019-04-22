@@ -73,4 +73,4 @@ if __name__ == '__main__':
     
     # Plotting
     drawer = Drawer(exp_name)
-    drawer.savePlotPNG(range(len(train_returns)), train_returns, "Episode", "Average return", env.getName() + ": return averaged on " + str(nb_runs) + " runs using " + algo.getName() + ", rew var mean: " + str(rew_var_mean) + ", rew var var: " + str(rew_var_var))
+    drawer.savePlotPNG(range(len(train_returns)), train_returns, "Episode", "Average return", env.getName() + ": return averaged on " + str(nb_runs) + " runs using " + algo.getName() + ", rew_var_mean_ter: " + str(rew_var_mean_ter) + ", rew_var_var_ter: " + str(rew_var_var_ter))
