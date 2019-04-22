@@ -42,7 +42,7 @@ class Drawer():
             if legend:
                 plt.plot(x,y, label = legend[y_id])
         if legend:
-            plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
+            plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15),
           fancybox=True, shadow=True)
         plt.title(plot_title)
         plt.xlabel(x_label)
@@ -50,17 +50,11 @@ class Drawer():
         output_path = self.output_path_root + "/" + plot_title + ".png"
         plt.savefig(output_path, bbox_inches="tight")
 
-    def saveCSV(self, sum_action_step, csv_title):
-        #path = self.output_path_root + "/" + csv_title + ".csv"
-        #if not os.path.exists(path):
-        #    with open(path, "w"):
-        #        pass
-        #scores_file = open(path, "a")
-        #for action in sum_action_step:
-        #    with scores_file: 
-        #        writer = csv.writer(scores_file)
-        #        writer.writerow(action)
-        pass
+    def saveCSV(self, csv_title, my_list):
+        path = self.output_path_root + "/" + csv_title + ".csv"
+        with open(path, "w") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(my_list)
     
     def saveMultiCSV(self, csv_title, list_of_lists, legend):
         path = self.output_path_root + "/" + csv_title + ".csv"

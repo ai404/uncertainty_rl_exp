@@ -40,37 +40,34 @@ class Trainer(object):
 
 
 if __name__ == '__main__':
+
+    # Experiment parameters
+    exp_name = "Third_try_b"
+    nb_runs = 50
+    nb_episodes = 300
+
     # Reward parameters
-    rew_var_mean_ter = 100000
-    rew_var_var_ter = 1
-    rew_var_mean_step = 100000
-    rew_var_var_step = 1
-    rew_params = {"reward_var_mean_ter": rew_var_mean_ter, "reward_var_var_ter": rew_var_var_ter, "reward_var_mean_step": rew_var_mean_step, "reward_var_var_step": rew_var_var_step}
+    rew_params1 = {"reward_var_mean_ter": 10000, "reward_var_var_ter": None, "reward_var_mean_step": None, "reward_var_var_step": None}
+    rew_params2 = {"reward_var_mean_ter": None, "reward_var_var_ter": None, "reward_var_mean_step": 1, "reward_var_var_step": None}
     
+
     # Environment
-    env = SemiSparseTabularEnvironment(6, 6, rew_params)
-    action_space = env.action_space
+    env1 = SemiSparseTabularEnvironment(6, 6, rew_params1)
+    env2 = SemiSparseTabularEnvironment(6, 6, rew_params2)
 
     # Algorithm
-    alpha = 0.3
-    temperature = 1
-    gamma = 1
-    algo_params = {"action_space": action_space, "temperature": temperature, "alpha":alpha, "gamma":gamma}
-    algo = Sarsa(env, algo_params)
-
-    # Utilities
+    algo_params = {"action_space": env1.action_space, "temperature": 1, "alpha": 0.3, "gamma": 1}
+    algo = MonteCarlo(algo_params)
    
-    # Experiment parameters
-    exp_name = "Second_try"
-    learn = True
-
-    nb_runs = 500
-    nb_episodes = 100
-
     # Experiment
-    trainer = Trainer(env, algo)
-    train_returns = trainer.evalAvgReturn([nb_runs, nb_episodes])
-    
+    trainer1 = Trainer(env1, algo)
+    train_returns1 = trainer1.evalAvgReturn([nb_runs, nb_episodes])
+    trainer2 = Trainer(env2, algo)
+    train_returns2 = trainer2.evalAvgReturn([nb_runs, nb_episodes])  
+
     # Plotting
     drawer = Drawer(exp_name)
-    drawer.savePlotPNG(range(len(train_returns)), train_returns, "Episode", "Average return", env.getName() + ": return averaged on " + str(nb_runs) + " runs using " + algo.getName() + ", rew_var_mean_ter: " + str(rew_var_mean_ter) + ", rew_var_var_ter: " + str(rew_var_var_ter))
+
+    legend =  [str(rew_params1), str(rew_params2)]
+    drawer.saveMultiPlotPNG(range(len(train_returns1)), [train_returns1, train_returns2], "Episode", "Average return", env1.getName() + ": return averaged on " + str(nb_runs) + " runs using " + algo.getName(), legend)
+    drawer.saveMultiCSV(env1.getName() + ": return averaged on " + str(nb_runs) + " runs using " + algo.getName(), [train_returns1, train_returns2], legend)
