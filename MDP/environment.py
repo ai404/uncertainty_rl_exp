@@ -26,7 +26,7 @@ class breward:
 class TabularEnv(gym.Env):
     metadata = {'render.modes': ['human','ansi']}
     
-    def __init__(self, grid_x = 5, grid_y = 5, seed = 42, max_steps = 10000):
+    def __init__(self, grid_x = 5, grid_y = 5, seed = 42, max_steps = 200):
         # Action and observation spaces
         self.grid_x = grid_x
         self.grid_y = grid_y
@@ -34,9 +34,8 @@ class TabularEnv(gym.Env):
         self.observation_space = spaces.Discrete(grid_x*grid_y)# The Space object corresponding to valid observations
 
         # Initialising state
-        self.current_state = np.random.choice(range(grid_x*grid_y))
-
-        print(self.current_state)
+        self.init_state = np.random.choice(range(grid_x*grid_y))
+        self.current_state = self.init_state
 
         # Step counting
         self.max_steps = max_steps
@@ -114,9 +113,8 @@ class TabularEnv(gym.Env):
     def reset(self):
         self.done = False
         self.step_count = 0
-        self.current_state = np.random.choice(range(self.grid_x*self.grid_y))
-        print(self.current_state)
-
+        self.init_state = np.random.choice(range(self.grid_x*self.grid_y))
+        self.current_state = self.init_state
         self.init_grid()
 
     def render(self, mode='ansi'):
