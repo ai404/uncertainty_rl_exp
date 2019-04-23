@@ -11,6 +11,7 @@ import math
 class Drawer():
     def __init__(self, exp_name):
         self.output_path_root = "./experiments/" + exp_name
+        self.exp_name = exp_name
         self.makeDir("./experiments")
         self.makeDir(self.output_path_root)
 
@@ -78,6 +79,20 @@ class Drawer():
                 print ("Successfully created the directory %s " % path)       
 
 
+    def saveDetails(self, doc_title, list_of_env_params, list_of_algo_params, do_list = False):
+        path = self.output_path_root + "/" + doc_title + ".txt"
+        with open(path, "w") as file:
+            file.write(self.exp_name + "\n\n")
+            file.write("Environments: \n\n")
+            for env_param in list_of_env_params:
+                file.write(str(env_param))
+            file.write("\nAlgorithms: ")
+            for algo_param in list_of_algo_params:
+                file.write(str(algo_param))
+            if do_list:
+                file.write("\nDo list: ")
+                file.write(str(do_list))
+                file.write("([1, 0][1, 1] means algo1: env1     algo2: env1 and env2")
 
 
 

@@ -49,6 +49,7 @@ def compare(algo_list, env_list, exp_name, nb_runs, nb_episodes, do_list = False
     legend = []
     train_returns = []
 
+
     if not do_list: ## Do all of them
         do_list = [[1 for env in env_list] for algo in algo_list]
 
@@ -66,17 +67,25 @@ def compare(algo_list, env_list, exp_name, nb_runs, nb_episodes, do_list = False
 
     drawer.saveMultiCSV(exp_name, train_returns, legend) # Save CSV
     drawer.saveMultiPlotPNG(range(nb_episodes), train_returns, "Episodes", "Average return on " + str(nb_runs), exp_name, legend) # Save return plot
+    
+    algo_param_list = []
+    env_param_list = []
+    for algo in algo_list:
+        algo_param_list.append(algo.params)
+    for env in env_list:
+        env_param_list.append(env.params)
+    drawer.saveDetails("Experiment details", env_param_list, algo_param_list, do_list)
 
 if __name__ == '__main__':
 
     # Experiment parameters
-    exp_name = "Third_try_f"
-    nb_runs = 50
+    exp_name = "Third_try_j"
+    nb_runs = 5
     nb_episodes = 300
 
     # Reward parameters
     rew_params1 = {"reward_var_mean_ter": None, "reward_var_var_ter": None, "reward_var_mean_step": None, "reward_var_var_step": None}
-    rew_params2 = {"reward_var_mean_ter": None, "reward_var_var_ter": None, "reward_var_mean_step": None, "reward_var_var_step": None}
+    rew_params2 = {"reward_var_mean_ter": None, "reward_var_var_ter": None, "reward_var_mean_step": 1, "reward_var_var_step": 0.6}
     
 
     # Environment
@@ -89,16 +98,5 @@ if __name__ == '__main__':
     algo1 = MonteCarlo(algo_params1)
     algo2 = ModifiedMonteCarlo(algo_params2)
    
-    compare([algo1, algo2], [env2], exp_name, nb_runs, nb_episodes)
-    # # Experiment
-    # trainer1 = Trainer(env1, algo)
-    # train_returns1 = trainer1.evalAvgReturn([nb_runs, nb_episodes])
-    # trainer2 = Trainer(env2, algo)
-    # train_returns2 = trainer2.evalAvgReturn([nb_runs, nb_episodes])  
-
-    # # Plotting
-    # drawer = Drawer(exp_name)
-
-    # legend =  [str(rew_params1), str(rew_params2)]
-    # drawer.saveMultiPlotPNG(range(len(train_returns1)), [train_returns1, train_returns2], "Episode", "Average return", env1.getName() + ": return averaged on " + str(nb_runs) + " runs using " + algo.getName(), legend)
-    # drawer.saveMultiCSV(env1.getName() + ": return averaged on " + str(nb_runs) + " runs using " + algo.getName(), [train_returns1, train_returns2], legend)
+    compare([algo1], [env1, env2], exp_name, nb_runs, nb_episodes)
+ 

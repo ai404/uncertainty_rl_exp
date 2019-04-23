@@ -178,6 +178,7 @@ class SparseTabularEnvironment(TabularEnv):
             reward_var_var_ter: variance of the variance of the reward for the terminal state"""
     def __init__(self, grid_x, grid_y, reward_params):
         super().__init__(grid_x, grid_y)
+        self.params = reward_params
         self.reward_var_mean_ter = reward_params["reward_var_mean_ter"]
         self.reward_var_var_ter = reward_params["reward_var_var_ter"]
         self.name = "Sparse"  
@@ -208,6 +209,7 @@ class SemiSparseTabularEnvironment(TabularEnv):
             reward_var_var_step: variance of the variance of the reward at each step"""    
     def __init__(self, grid_x, grid_y, reward_params):
         super().__init__(grid_x, grid_y)
+        self.params = reward_params
         self.reward_var_mean_ter = reward_params["reward_var_mean_ter"]
         self.reward_var_var_ter = reward_params["reward_var_var_ter"]
         self.reward_var_mean_step = reward_params["reward_var_mean_step"]
@@ -239,6 +241,7 @@ class DenseTabularEnvironment(TabularEnv):
             reward_var_var_step: variance of the variance of the reward at each step"""    
     def __init__(self, grid_x, grid_y, reward_params):
         super().__init__(grid_x, grid_y)
+        self.params = reward_params
         self.reward_var_mean_ter = reward_params["reward_var_mean_ter"]
         self.reward_var_var_ter = reward_params["reward_var_var_ter"]
         self.reward_var_mean_step = reward_params["reward_var_mean_step"]
