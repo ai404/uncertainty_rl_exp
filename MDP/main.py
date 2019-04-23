@@ -74,23 +74,24 @@ if __name__ == '__main__':
 
     # Experiment parameters
     exp_name = "Third_try_j"
-    nb_runs = 5
+    nb_runs = 100
     nb_episodes = 300
 
     # Reward parameters
-    rew_params1 = {"reward_var_mean_ter": None, "reward_var_var_ter": None, "reward_var_mean_step": None, "reward_var_var_step": None}
-    rew_params2 = {"reward_var_mean_ter": None, "reward_var_var_ter": None, "reward_var_mean_step": 1, "reward_var_var_step": 0.6}
-    
+    rew_params1 = {"reward_var_mean_ter": 10000, "reward_var_var_ter": None, "reward_var_mean_step": None, "reward_var_var_step": None, "reward_var_mean_max": None, "reward_var_var_max": None}
+    rew_params1 = {"reward_var_mean_ter": 10000, "reward_var_var_ter": None, "reward_var_mean_step": None, "reward_var_var_step": None, "reward_var_mean_max": None, "reward_var_var_max": None}
+    rew_params1 = {"reward_var_mean_ter": 10000, "reward_var_var_ter": None, "reward_var_mean_step": None, "reward_var_var_step": None, "reward_var_mean_max": None, "reward_var_var_max": None}
 
     # Environment
-    env1 = SemiSparseTabularEnvironment(6, 6, rew_params1)
-    env2 = SemiSparseTabularEnvironment(6, 6, rew_params2)
+    env1 = SparseTabularEnvironment(6, 6, rew_params1)
+    #env2 = DenseTabularEnvironment(6, 6, rew_params2)
+    #env3 = DenseTabularEnvironment(6, 6, rew_params3)
 
     # Algorithm
-    algo_params1 = {"action_space": env2.action_space, "temperature": 1, "alpha": 0.3, "gamma": 1}
-    algo_params2 = {"action_space": env2.action_space, "temperature": 1, "alpha": 0.3, "gamma": 1}
+    algo_params1 = {"action_space": env1.action_space, "temperature": 1, "alpha": 0.3, "gamma": 1}
+    algo_params2 = {"action_space": env1.action_space, "temperature": 1, "alpha": 0.3, "gamma": 1}
     algo1 = MonteCarlo(algo_params1)
     algo2 = ModifiedMonteCarlo(algo_params2)
    
-    compare([algo1], [env1, env2], exp_name, nb_runs, nb_episodes)
+    compare([algo1, algo2], [env1], exp_name, nb_runs, nb_episodes)
  

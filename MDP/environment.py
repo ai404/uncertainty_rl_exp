@@ -187,14 +187,15 @@ class SparseTabularEnvironment(TabularEnv):
         self.params = reward_params
         self.reward_var_mean_ter = reward_params["reward_var_mean_ter"]
         self.reward_var_var_ter = reward_params["reward_var_var_ter"]
+        self.reward_var_mean_max = reward_params["reward_var_mean_max"]
+        self.reward_var_var_max = reward_params["reward_var_var_max"]
         self.name = "Sparse"  
 
     def _get_reward(self, closing_reason = False):
         # Max steps
         if closing_reason == "max_steps":
             #print("Closing because max steps")
-
-            return self.computeReward(breward.MAX_STEPS, self.reward_var_mean_ter, self.reward_var_var_ter)
+            return self.computeReward(breward.MAX_STEPS, self.reward_var_mean_max, self.reward_var_var_max)
 
         # Terminal state
         elif closing_reason == "term":
@@ -219,23 +220,23 @@ class SemiSparseTabularEnvironment(TabularEnv):
         self.reward_var_mean_ter = reward_params["reward_var_mean_ter"]
         self.reward_var_var_ter = reward_params["reward_var_var_ter"]
         self.reward_var_mean_step = reward_params["reward_var_mean_step"]
-        self.reward_var_var_step = reward_params["reward_var_var_step"]  
+        self.reward_var_var_step = reward_params["reward_var_var_step"] 
+        self.reward_var_mean_max = reward_params["reward_var_mean_max"]
+        self.reward_var_var_max = reward_params["reward_var_var_max"]         
         self.name = "Semi sparse"  
 
     def _get_reward(self, closing_reason = False):
         # Max steps
         if closing_reason == "max_steps":
-            return self.computeReward(breward.MAX_STEPS, self.reward_var_mean_ter, self.reward_var_var_ter)
+            return self.computeReward(breward.MAX_STEPS, self.reward_var_mean_max, self.reward_var_var_max)
 
         # Terminal state
         elif closing_reason == "term":
-            reward_mean = breward.TERM # End
-            return self.computeReward(reward_mean, self.reward_var_mean_ter, self.reward_var_var_ter)
+            return self.computeReward(breward.TERM , self.reward_var_mean_ter, self.reward_var_var_ter)
 
         # Normal step
         else:
-            reward_mean = breward.STEP
-            return self.computeReward(reward_mean, self.reward_var_mean_step, self.reward_var_var_step)
+            return self.computeReward(breward.STEP, self.reward_var_mean_step, self.reward_var_var_step)
 
 class DenseTabularEnvironment(TabularEnv):
     """This environment gives a reward of 1000 at terminal state and a reward of -1 at each other state.
@@ -252,6 +253,8 @@ class DenseTabularEnvironment(TabularEnv):
         self.reward_var_var_ter = reward_params["reward_var_var_ter"]
         self.reward_var_mean_step = reward_params["reward_var_mean_step"]
         self.reward_var_var_step = reward_params["reward_var_var_step"]
+        self.reward_var_mean_max = reward_params["reward_var_mean_max"]
+        self.reward_var_var_max = reward_params["reward_var_var_max"]
         self.name = "Dense"
 
         if grid_x*grid_y not in STATE_REWARDS:
@@ -275,7 +278,7 @@ class DenseTabularEnvironment(TabularEnv):
     def _get_reward(self, closing_reason = False):
         # Max steps
         if closing_reason == "max_steps":
-            return self.computeReward(breward.MAX_STEPS, self.reward_var_mean_ter, self.reward_var_var_ter)
+            return self.computeReward(breward.MAX_STEPS, self.reward_var_mean_max, self.reward_var_var_max)
 
         else:
             reward_mean = (1-self.passed[self.current_state])*self.state_reward[self.current_state] + breward.STEP
