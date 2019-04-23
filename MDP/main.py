@@ -68,13 +68,7 @@ def compare(algo_list, env_list, exp_name, nb_runs, nb_episodes, do_list = False
     drawer.saveMultiCSV(exp_name, train_returns, legend) # Save CSV
     drawer.saveMultiPlotPNG(range(nb_episodes), train_returns, "Episodes", "Average return on " + str(nb_runs), exp_name, legend) # Save return plot
     
-    algo_param_list = []
-    env_param_list = []
-    for algo in algo_list:
-        algo_param_list.append(algo.params)
-    for env in env_list:
-        env_param_list.append(env.params)
-    drawer.saveDetails("Experiment details", env_param_list, algo_param_list, do_list)
+    drawer.saveDetails("Experiment details", env_list, algo_list, do_list)
 
 if __name__ == '__main__':
 
