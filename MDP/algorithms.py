@@ -228,33 +228,24 @@ class ModifiedMonteCarlo(Agent_Q):
             G_var = 0
             while len(self.memory) > 0:
                 S_, A_, R_, R_var_ = self.memory.pop()
-                if [S_, A_, R_] in self.memory:   # First time MonteCarlo: don't do anything if already passed here
+                if [S_, A_, R_, R_var] in self.memory:   # First time MonteCarlo: don't do anything if already passed here
                     G += R_
                 else:
-                    #print("R_: " + str(R_))
                     G += R_
-                    #print("G: " + str(G))
-                    #print("R_var_: " + str(R_var_))
                     if R_var_:
                         G_var += R_var_
-                    #print("G_var: " + str(G_var))
                     C = self.getCValue(S_, A_)
-                    #print("C before: " + str(C))
                     if G_var:
-                        w = 1/G_var
+                        w = 1./G_var
                         C += w
                     else:
                         w = 10**3
                         C += w
-                    #print("C after: " + str(C))
                     self.setCValue(S_, A_, C)
-
                     q_sa = self.getQValue(S_, A_)
-                    new_q = q_sa + w/C*(G - q_sa)
+                    new_q = q_sa + self.alpha*w/C*(G - q_sa)
                     self.setQValue(S_, A_, new_q)
 
-
-            #assert 1 == 0
 
     def setCValue(self, state, action, value):
         if state in self.C:
