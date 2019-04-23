@@ -2,7 +2,7 @@ import random
 from utils import *
 import numpy as np
 import time
-
+from collections import defaultdict
 
 class Agent_Q(object):
     def __init__(self, parameters):
@@ -131,7 +131,8 @@ class ModifiedSarsa(Agent_Q):
         self.alpha = self.params["alpha"]
         self.gamma = self.params["gamma"]
         self.default_q = 0
-        self.name = "Sarsa"
+        self.name = "Modified Sarsa"
+        self.C = defaultdict(lambda :defaultdict(int))
 
     def update(self, info):
         S = info[0]
@@ -147,9 +148,13 @@ class ModifiedSarsa(Agent_Q):
 
         q_sa = self.getQValue(S, A)
         q_sn_an = self.getQValue(Sn, An)
-        new_q = q_sa + self.alpha * (R + self.gamma * q_sn_an - q_sa)
-        self.setQValue(S, A, new_q)
-
+        
+        if R_var is not None:
+            wn = 1./R_var
+            self.C[S][A] = self.C[S][A] + wn
+            step = self.alpha * wn/self.C[S][A]
+            new_q = q_sa + step * (R + self.gamma * q_sn_an - q_sa)
+            self.setQValue(S, A, new_q)
 
 
 class MonteCarlo(Agent_Q):
