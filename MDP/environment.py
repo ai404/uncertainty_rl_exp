@@ -9,6 +9,10 @@ UP = 0
 RIGHT = 1
 DOWN = 2
 LEFT = 3
+
+STATE_REWARDS = {}
+
+
 class bcolors:
     START = '\033[95m'
     #BLUE = '\033[94m'
@@ -19,7 +23,7 @@ class bcolors:
 
 class breward:
     TERM = 100
-    MAX_STEPS = -2000
+    MAX_STEPS = -1000
     STEP = -1
     DENSE_RANGE = 11 # (reward going from 0 to DENSE_RANGE - 1)
 
@@ -246,7 +250,13 @@ class DenseTabularEnvironment(TabularEnv):
         self.reward_var_var_ter = reward_params["reward_var_var_ter"]
         self.reward_var_mean_step = reward_params["reward_var_mean_step"]
         self.reward_var_var_step = reward_params["reward_var_var_step"]
-        self.name = "Dense"  
+        self.name = "Dense"
+
+        if grid_x*grid_y not in STATE_REWARDS:
+            STATE_REWARDS[grid_x*grid_y] = [np.random.choice(range(breward.DENSE_RANGE)) for i in range(self.grid_x*self.grid_y)]
+
+        self.state_reward = STATE_REWARDS[grid_x*grid_y]
+        self.state_reward[self.terminal_state] = breward.TERM
 
 
     def init_grid(self):
@@ -258,9 +268,6 @@ class DenseTabularEnvironment(TabularEnv):
         # Indicator of state passed
         self.passed = [0 for i in range(self.grid_x*self.grid_y)]
         self.passed[self.current_state] = 1
-
-        self.state_reward = [np.random.choice(range(breward.DENSE_RANGE)) for i in range(self.grid_x*self.grid_y)]
-        self.state_reward[self.terminal_state] = brewad.TERM
 
 
     def _get_reward(self, closing_reason = False):
