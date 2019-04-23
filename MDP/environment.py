@@ -162,11 +162,13 @@ class TabularEnv(gym.Env):
 
     def computeReward(self, reward_mean, reward_var_mean = None, reward_var_var = None):
         # Computes the reward, the noise and the variance given the reward mean, the expected reward variance and the variance of the reward variance.
-        if reward_var_mean and reward_var_var:
-            reward_var = drawChiSquare(reward_var_mean, reward_var_var)
+        curr_reward_var_mean = reward_var_mean
+        curr_reward_var_var = reward_var_var
+        if curr_reward_var_mean and curr_reward_var_var:
+            reward_var = drawChiSquare(curr_reward_var_mean, curr_reward_var_var)
             reward_noise = np.random.normal(loc = 0, scale = np.sqrt(reward_var))
-        elif reward_var_mean and not reward_var_var:
-            reward_var = reward_var_mean
+        elif curr_reward_var_mean and not curr_reward_var_var:
+            reward_var = curr_reward_var_mean
             reward_noise = np.random.normal(loc = 0, scale = np.sqrt(reward_var))
         else:
             reward_var = None
@@ -192,7 +194,7 @@ class SparseTabularEnvironment(TabularEnv):
         if closing_reason == "max_steps":
             #print("Closing because max steps")
 
-            return self.computeReward(breward.MAX_STEPS)
+            return self.computeReward(breward.MAX_STEPS, self.reward_var_mean_ter, self.reward_var_var_ter)
 
         # Terminal state
         elif closing_reason == "term":
@@ -223,7 +225,7 @@ class SemiSparseTabularEnvironment(TabularEnv):
     def _get_reward(self, closing_reason = False):
         # Max steps
         if closing_reason == "max_steps":
-            return self.computeReward(breward.MAX_STEPS)
+            return self.computeReward(breward.MAX_STEPS, self.reward_var_mean_ter, self.reward_var_var_ter)
 
         # Terminal state
         elif closing_reason == "term":
@@ -273,7 +275,7 @@ class DenseTabularEnvironment(TabularEnv):
     def _get_reward(self, closing_reason = False):
         # Max steps
         if closing_reason == "max_steps":
-            return self.computeReward(breward.MAX_STEPS)
+            return self.computeReward(breward.MAX_STEPS, self.reward_var_mean_ter, self.reward_var_var_ter)
 
         else:
             reward_mean = (1-self.passed[self.current_state])*self.state_reward[self.current_state] + breward.STEP
