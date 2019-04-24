@@ -14,3 +14,9 @@ MDP/experiments/Third_try_b/
 MDP/experiments/Third_try_a/
 
 *.csv
+
+*.txt
+
+*.odt#
+
+MDP/old_experiments/
