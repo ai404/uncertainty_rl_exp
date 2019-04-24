@@ -280,6 +280,8 @@ class DenseTabularEnvironment(TabularEnv):
 
     def _get_reward(self, closing_reason = False):
         reward_mean = (1-self.passed[self.current_state])*self.state_reward[self.current_state] + breward.STEP
+        if closing_reason == "term":
+            return self.computeReward(reward_mean, self.rvar_mean_ter, self.rvar_var_ter)
         return self.computeReward(reward_mean, self.rvar_mean_step, self.rvar_var_step)
 
 
