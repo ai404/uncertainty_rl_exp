@@ -74,8 +74,8 @@ if __name__ == '__main__':
 
     # Experiment parameters
     exp_name = "Third_try_j"
-    nb_runs = 100
-    nb_episodes = 300
+    nb_runs = 10
+    nb_episodes = 30
 
     # Reward parameters
     rew_params1 = {"rvar_mean_ter": 1, "rvar_var_ter": 0.6, "rvar_mean_step": 100, "rvar_var_step": 600}
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     rew_params3 = {"rvar_mean_ter": None, "rvar_var_ter": None, "rvar_mean_step": None, "rvar_var_step": None}
 
     # Environment
-    env1 = SparseTabularEnvironment(6, 6, rew_params2)
+    env1 = SparseTabularEnvironment(6, 6, rew_params1)
     #env2 = DenseTabularEnvironment(6, 6, rew_params2)
     #env3 = DenseTabularEnvironment(6, 6, rew_params3)
 
@@ -93,5 +93,6 @@ if __name__ == '__main__':
     algo1 = Sarsa(algo_params2)
     algo2 = ModifiedSarsa(algo_params2)
    
-    compare([algo1, algo2], [env1], exp_name, nb_runs, nb_episodes)
+    drawer,params = compare([algo1, algo2], [env1], exp_name, nb_runs, nb_episodes)
+    drawer.saveMultiPlotPNG(*params)
  
