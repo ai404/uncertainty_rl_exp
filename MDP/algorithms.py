@@ -188,9 +188,12 @@ class MonteCarlo(Agent_Q):
                 if [S_, A_, R_] in self.memory:   # First time MonteCarlo
                     G += R_
                 else:
+                    self.incrementVisitNumber(S_, A_)
+                    C = self.getVisitNumber(S_, A_)
+
                     G += R_
                     q_sa = self.getQValue(S_, A_)
-                    new_q = q_sa + self.alpha*(G - q_sa)
+                    new_q = q_sa + self.alpha/C*(G - q_sa)
                     self.setQValue(S_, A_, new_q)
 
     def partialReset(self):
