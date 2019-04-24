@@ -119,7 +119,9 @@ class Sarsa(Agent_Q):
 
         q_sa = self.getQValue(S, A)
         q_sn_an = self.getQValue(Sn, An)
-        new_q = q_sa + self.alpha * (R + self.gamma * q_sn_an - q_sa)
+        self.incrementVisitNumber(S, A)
+        C = self.getVisitNumber(S, A)
+        new_q = q_sa + self.alpha/C* (R + self.gamma * q_sn_an - q_sa)
         self.setQValue(S, A, new_q)
 
 

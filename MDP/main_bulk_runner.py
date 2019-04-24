@@ -14,7 +14,7 @@ def run_experiment(text_data,algo1,algo2 = None,nb_runs=300,nb_episodes=400):
     var_step = float(var_step) if var_step!="None" else 0
     exp_name = "_".join(text_data.strip().split(","))
 
-    temperature = 1
+    temperature = 10
     rew_params = {"rvar_mean_ter": mean_ter, "rvar_var_ter": var_ter, "rvar_mean_step": mean_step, "rvar_var_step": var_step}
     #print(rew_params)
     if Env.strip() == "Sparse":
@@ -27,7 +27,7 @@ def run_experiment(text_data,algo1,algo2 = None,nb_runs=300,nb_episodes=400):
     
     instance_env = env(6, 6, rew_params)
     #print(instance_env.action_space.n)
-    algo_params1 = {"action_space": instance_env.action_space, "temperature": temperature, "alpha": 0.3, "gamma": 1}
+    algo_params1 = {"action_space": instance_env.action_space, "temperature": temperature, "alpha": 1, "gamma": 1}
     if exp_code.startswith("1"):#algo2 is None:
         instance_algo1 = algo1(algo_params1)
         
