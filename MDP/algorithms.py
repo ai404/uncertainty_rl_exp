@@ -134,7 +134,7 @@ class ModifiedSarsa(Agent_Q):
         self.gamma = self.params["gamma"]
         self.default_q = 0
         self.name = "Modified Sarsa"
-        self.C = defaultdict(lambda :defaultdict(int))
+        self.C = {}
 
     def update(self, info):
         S = info[0]
@@ -153,18 +153,33 @@ class ModifiedSarsa(Agent_Q):
         q_sn_an = self.getQValue(Sn, An)
         
         if R_var is None:
-            wn = 10**3
-        else:
-            wn = 1./R_var
-        self.C[S][A] = self.C[S][A] + wn
-        step = self.alpha * wn/self.C[S][A]
+            R_var = 1/10**3
+        C_SnAn = self.getCValue(Sn, An)
+        wn = 1./(R_var + self.gamma**2/C_SnAn)
+
+        C_SA = self.getCValue(S, A)
+        C_SA += wn
+        self.setCValue(S, A, C_SA)
+        step = self.alpha * wn/C_SA
         new_q = q_sa + step * (R + self.gamma * q_sn_an - q_sa)
         self.setQValue(S, A, new_q)
 
     def reset(self):
         super().reset()
-        self.C = defaultdict(lambda :defaultdict(int))
+        self.C = {}
 
+    def setCValue(self, state, action, value):
+        if state in self.C:
+            self.C[state][action] = value
+        else:
+            self.C[state] = [0.0001 for i in range(self.nb_actions)]
+            self.C[state][action] = value
+
+    def getCValue(self, state, action):
+        if state in self.C:
+            return self.C[state][action]
+        else:
+            return 0.0001
 
 
 class MonteCarlo(Agent_Q):
