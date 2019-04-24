@@ -159,6 +159,11 @@ class ModifiedSarsa(Agent_Q):
         new_q = q_sa + step * (R + self.gamma * q_sn_an - q_sa)
         self.setQValue(S, A, new_q)
 
+    def reset(self):
+        super().reset()
+        self.C = defaultdict(lambda :defaultdict(int))
+
+
 
 class MonteCarlo(Agent_Q):
     def __init__(self, parameters):
