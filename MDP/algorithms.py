@@ -190,7 +190,6 @@ class MonteCarlo(Agent_Q):
                 else:
                     self.incrementVisitNumber(S_, A_)
                     C = self.getVisitNumber(S_, A_)
-
                     G += R_
                     q_sa = self.getQValue(S_, A_)
                     new_q = q_sa + self.alpha/C*(G - q_sa)
@@ -210,6 +209,7 @@ class ModifiedMonteCarlo(Agent_Q):
         self.default_q = 0
         self.name = "Modified MonteCarlo"
         self.memory = []
+        self.rvar_memory = []
         self.C = {}
 
     def update(self, info):
@@ -224,15 +224,22 @@ class ModifiedMonteCarlo(Agent_Q):
         R_seen = R + R_noise
 
         if not done:
-            self.memory.append([S, A, R_seen, R_var])
+            self.memory.append([S, A, R_seen])
+            self.rvar_memory.append(R_var)
         else:
-            self.memory.append([S, A, R_seen, R_var])
+            self.memory.append([S, A, R_seen])
+            self.rvar_memory.append(R_var)
             G = 0
             G_var = 0
+            #print(self.memory)
+            #assert 0 == 1   
             while len(self.memory) > 0:
-                S_, A_, R_, R_var_ = self.memory.pop()
-                if [S_, A_, R_, R_var] in self.memory:   # First time MonteCarlo: don't do anything if already passed here
+                S_, A_, R_ = self.memory.pop()          # Necessary to separate R_var from the others in order to search for first time MC
+                R_var_ = self.rvar_memory.pop()
+                if [S_, A_, R_] in self.memory:   # First time MonteCarlo: don't do anything if already passed here TODO: more work on this
                     G += R_
+                    if R_var_:
+                        G_var += R_var_
                 else:
                     G += R_
                     if R_var_:
