@@ -78,9 +78,9 @@ if __name__ == '__main__':
     nb_episodes = 300
 
     # Reward parameters
-    rew_params1 = {"reward_var_mean_ter": 10000, "reward_var_var_ter": None, "reward_var_mean_step": None, "reward_var_var_step": None, "reward_var_mean_max": None, "reward_var_var_max": None}
-    rew_params1 = {"reward_var_mean_ter": 10000, "reward_var_var_ter": None, "reward_var_mean_step": None, "reward_var_var_step": None, "reward_var_mean_max": None, "reward_var_var_max": None}
-    rew_params1 = {"reward_var_mean_ter": 10000, "reward_var_var_ter": None, "reward_var_mean_step": None, "reward_var_var_step": None, "reward_var_mean_max": None, "reward_var_var_max": None}
+    rew_params1 = {"rvar_mean_ter": 1, "rvar_var_ter": 0.6, "rvar_mean_step": 100, "rvar_var_step": 600}
+    rew_params2 = {"rvar_mean_ter": None, "rvar_var_ter": None, "rvar_mean_step": None, "rvar_var_step": None}
+    rew_params3 = {"rvar_mean_ter": None, "rvar_var_ter": None, "rvar_mean_step": None, "rvar_var_step": None}
 
     # Environment
     env1 = SparseTabularEnvironment(6, 6, rew_params1)
