@@ -142,19 +142,22 @@ class ModifiedSarsa(Agent_Q):
         R_var = info[4]
         Sn = info[5]
         An = info[6]
-
+        #done = info[7]
+        
         self.ret += R
         R = R + R_noise # Add the noise on R
 
         q_sa = self.getQValue(S, A)
         q_sn_an = self.getQValue(Sn, An)
         
-        if R_var is not None:
+        if R_var is None:
+            wn = 10**3
+        else:
             wn = 1./R_var
-            self.C[S][A] = self.C[S][A] + wn
-            step = self.alpha * wn/self.C[S][A]
-            new_q = q_sa + step * (R + self.gamma * q_sn_an - q_sa)
-            self.setQValue(S, A, new_q)
+        self.C[S][A] = self.C[S][A] + wn
+        step = self.alpha * wn/self.C[S][A]
+        new_q = q_sa + step * (R + self.gamma * q_sn_an - q_sa)
+        self.setQValue(S, A, new_q)
 
 
 class MonteCarlo(Agent_Q):
