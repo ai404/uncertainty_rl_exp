@@ -1,0 +1,17 @@
+Exp,Num,Env,mean_ter,var_ter,mean_step,var_step
+1.a.1,0,Sparse,None,None,None,None
+1.a.1,1,Sparse,100,None,None,None
+1.a.1,2,Sparse,10000,None,None,None
+1.a.1,3,Sparse,1000000,None,None,None
+1.a.2,0,Sparse,None,None,None,None
+1.a.2,1,Sparse,None,None,1,None
+1.a.2,2,Sparse,None,None,10,None
+1.a.2,3,Sparse,10000,None,10,None
+1.b.1,0,Semisparse,None,None,None,None
+1.b.1,1,Semisparse,10000,None,None,None
+1.b.1,2,Semisparse,None,None,1,None
+1.b.1,3,Semisparse,10000,None,1,None
+1.c.1,0,Dense,None,None,None,None
+1.c.1,1,Dense,10000,None,None,None
+1.c.1,2,Dense,None,None,1,None
+1.c.1,3,Dense,10000,None,1,None
