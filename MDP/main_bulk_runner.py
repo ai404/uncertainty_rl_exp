@@ -8,10 +8,10 @@ def run_experiment(text_data,algo1,algo2 = None,nb_runs=300,nb_episodes=400):
     _,_,Env,mean_ter,var_ter,mean_step,var_step = text_data.strip().split(",")
     #print(text_data.strip().split(","))
     
-    mean_ter = float(mean_ter) if mean_ter!="None" else None
-    var_ter = float(var_ter) if var_ter!="None" else None
-    mean_step = float(mean_step) if mean_step!="None" else None
-    var_step = float(var_step) if var_step!="None" else None
+    mean_ter = float(mean_ter) if mean_ter!="None" else 0
+    var_ter = float(var_ter) if var_ter!="None" else 0
+    mean_step = float(mean_step) if mean_step!="None" else 0
+    var_step = float(var_step) if var_step!="None" else 0
     exp_name = "_".join(text_data.strip().split(","))
 
     temperature = 1
@@ -38,23 +38,29 @@ def run_experiment(text_data,algo1,algo2 = None,nb_runs=300,nb_episodes=400):
         drawer = Drawer(exp_name)
 
         legend =  [str(rew_params)]
-        drawer.saveMultiPlotPNG(range(len(train_returns1)), [train_returns1], "Episode", "Average return", instance_env.getName() + ": return averaged on " + str(nb_runs) + " runs using " + instance_algo1.getName(), legend)
+        #drawer.saveMultiPlotPNG(range(len(train_returns1)), [train_returns1], "Episode", "Average return", instance_env.getName() + ": return averaged on " + str(nb_runs) + " runs using " + instance_algo1.getName(), legend)
         drawer.saveMultiCSV(instance_env.getName() + ": return averaged on " + str(nb_runs) + " runs using " + instance_algo1.getName(), [train_returns1], legend)
-        
+        return drawer, (range(len(train_returns1)), [train_returns1], "Episode", "Average return", instance_env.getName() + ": return averaged on " + str(nb_runs) + " runs using " + instance_algo1.getName(), legend)
     else:
         instance_algo1 = algo1(algo_params1)
         instance_algo2 = algo2(algo_params1)
-        compare([instance_algo1, instance_algo2], [instance_env], exp_name, nb_runs, nb_episodes)
-
+        return compare([instance_algo1, instance_algo2], [instance_env], exp_name, nb_runs, nb_episodes)
 if __name__ == '__main__':
-    
-    # Experiment parameters
-    nb_runs = 300
-    nb_episodes = 400
+    import multiprocessing as mp
+    import tqdm
 
+    # Experiment parameters
+    nb_runs = 3
+    nb_episodes = 10
+
+    # set your alorithms here
+    algo1 = Sarsa
+    algo2 = None#ModifiedSarsa
+    def wrapper(x):
+        return run_experiment(x,algo1=algo1,algo2=algo2,nb_runs=nb_runs,nb_episodes=nb_episodes)
     with open("experiments.csv","r") as f:
-        for i,line in enumerate(f.readlines()):
-            if i==0:continue
-            run_experiment(line,Sarsa,nb_runs=nb_runs,nb_episodes=nb_episodes)
-            break
-            
+
+        lines = f.readlines()[1:]
+        with mp.Pool(mp.cpu_count()) as p:
+            for drawer,params in tqdm.tqdm(p.imap_unordered(wrapper, lines), total=len(lines)):
+                drawer.saveMultiPlotPNG(*params)

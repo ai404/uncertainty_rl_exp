@@ -31,7 +31,7 @@ class Trainer(object):
        
         train_returns = [0 for i in range(nb_episodes)]
         for run in range(nb_runs):
-            print("Training run:" + str(run))
+            #print("Training run:" + str(run))
             self.algo.reset()
             for episode in range(nb_episodes):
                 train_returns[episode] += (self.trainOneEpisode()-train_returns[episode])/(run+1)
@@ -66,10 +66,10 @@ def compare(algo_list, env_list, exp_name, nb_runs, nb_episodes, do_list = False
         algo_id += 1
 
     drawer.saveMultiCSV(exp_name, train_returns, legend) # Save CSV
-    drawer.saveMultiPlotPNG(range(nb_episodes), train_returns, "Episodes", "Average return on " + str(nb_runs), exp_name, legend) # Save return plot
+    #drawer.saveMultiPlotPNG(range(nb_episodes), train_returns, "Episodes", "Average return on " + str(nb_runs), exp_name, legend) # Save return plot
     
     drawer.saveDetails("Experiment details", env_list, algo_list, do_list)
-
+    return drawer, (range(nb_episodes), train_returns, "Episodes", "Average return on " + str(nb_runs), exp_name, legend) # Save return plot
 if __name__ == '__main__':
 
     # Experiment parameters
@@ -83,15 +83,15 @@ if __name__ == '__main__':
     rew_params3 = {"rvar_mean_ter": None, "rvar_var_ter": None, "rvar_mean_step": None, "rvar_var_step": None}
 
     # Environment
-    env1 = SparseTabularEnvironment(6, 6, rew_params1)
+    env1 = SparseTabularEnvironment(6, 6, rew_params2)
     #env2 = DenseTabularEnvironment(6, 6, rew_params2)
     #env3 = DenseTabularEnvironment(6, 6, rew_params3)
 
     # Algorithm
     algo_params1 = {"action_space": env1.action_space, "temperature": 1, "alpha": 0.3, "gamma": 1}
     algo_params2 = {"action_space": env1.action_space, "temperature": 1, "alpha": 0.3, "gamma": 1}
-    algo1 = MonteCarlo(algo_params1)
-    algo2 = ModifiedMonteCarlo(algo_params2)
+    algo1 = Sarsa(algo_params2)
+    algo2 = ModifiedSarsa(algo_params2)
    
     compare([algo1, algo2], [env1], exp_name, nb_runs, nb_episodes)
  
