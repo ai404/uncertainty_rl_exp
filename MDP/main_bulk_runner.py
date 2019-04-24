@@ -5,7 +5,7 @@ import time
 from main import *
 
 def run_experiment(text_data,algo1,algo2 = None,nb_runs=300,nb_episodes=400):
-    _,_,Env,mean_ter,var_ter,mean_step,var_step = text_data.strip().split(",")
+    exp_code,_,Env,mean_ter,var_ter,mean_step,var_step = text_data.strip().split(",")
     #print(text_data.strip().split(","))
     
     mean_ter = float(mean_ter) if mean_ter!="None" else 0
@@ -17,18 +17,18 @@ def run_experiment(text_data,algo1,algo2 = None,nb_runs=300,nb_episodes=400):
     temperature = 1
     rew_params = {"rvar_mean_ter": mean_ter, "rvar_var_ter": var_ter, "rvar_mean_step": mean_step, "rvar_var_step": var_step}
     #print(rew_params)
-    if Env == "Sparse":
+    if Env.strip() == "Sparse":
         env = SparseTabularEnvironment
-    elif Env == "Semisparse":
+    elif Env.strip() == "Semisparse":
         env = SemiSparseTabularEnvironment
-    elif Env == "Dense":
+    elif Env.strip() == "Dense":
         env = DenseTabularEnvironment
         temperature = 10
     
     instance_env = env(6, 6, rew_params)
     #print(instance_env.action_space.n)
     algo_params1 = {"action_space": instance_env.action_space, "temperature": temperature, "alpha": 0.3, "gamma": 1}
-    if algo2 is None:
+    if exp_code.startswith("1"):#algo2 is None:
         instance_algo1 = algo1(algo_params1)
         
         trainer1 = Trainer(instance_env, instance_algo1)
@@ -50,12 +50,12 @@ if __name__ == '__main__':
     import tqdm
 
     # Experiment parameters
-    nb_runs = 3
-    nb_episodes = 10
+    nb_runs = 4#00
+    nb_episodes = 10#000
 
     # set your alorithms here
     algo1 = Sarsa
-    algo2 = None#ModifiedSarsa
+    algo2 = ModifiedSarsa
     def wrapper(x):
         return run_experiment(x,algo1=algo1,algo2=algo2,nb_runs=nb_runs,nb_episodes=nb_episodes)
     with open("experiments.csv","r") as f:

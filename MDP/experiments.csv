@@ -19,7 +19,7 @@ Exp,Num,Env,mean_ter,var_ter,mean_step,var_step
 2.a.2.a,0,Sparse,10000,None,None,None
 2.a.2.b,0,Sparse,10000,250000,None,None
 2.a.3.a,0,Sparse,None,None,1,None
-2.a.3.b,0,Sparse ,None,None,1,0.6
+2.a.3.b,0,Sparse,None,None,1,0.6
 2.a.4.a,0,Sparse,None,None,10,None
 2.a.4.b,0,Sparse,None,None,10,60
 2.a.5.a,0,Sparse,10000,None,10,None
