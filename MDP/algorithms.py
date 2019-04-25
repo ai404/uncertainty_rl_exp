@@ -3,6 +3,7 @@ from utils import *
 import numpy as np
 import time
 from collections import defaultdict
+from environment import bdone
 
 class Agent_Q(object):
     def __init__(self, parameters):
@@ -144,16 +145,20 @@ class ModifiedSarsa(Agent_Q):
         R_var = info[4]
         Sn = info[5]
         An = info[6]
-        #done = info[7]
+        done = info[7]
         
         self.ret += R
         R = R + R_noise # Add the noise on R
 
         q_sa = self.getQValue(S, A)
+        if S == None:
+            time.sleep(2)
         q_sn_an = self.getQValue(Sn, An)
         
         if R_var is None:
-            R_var = 1/10**3
+            R_var = 1./10**3
+        if done == bdone.TERM: # We are sure of the terminal state being the terminal state with 0 value!
+            self.setCValue(Sn, An, 10**3)
         C_SnAn = self.getCValue(Sn, An)
         wn = 1./(R_var + self.gamma**2/C_SnAn)
 
@@ -172,14 +177,14 @@ class ModifiedSarsa(Agent_Q):
         if state in self.C:
             self.C[state][action] = value
         else:
-            self.C[state] = [0.0001 for i in range(self.nb_actions)]
+            self.C[state] = [1./10**6 for i in range(self.nb_actions)]
             self.C[state][action] = value
 
     def getCValue(self, state, action):
         if state in self.C:
             return self.C[state][action]
         else:
-            return 0.0001
+            return 1./10**6
 
 
 class MonteCarlo(Agent_Q):

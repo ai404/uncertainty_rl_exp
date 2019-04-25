@@ -26,6 +26,11 @@ class breward:
     STEP = -1
     DENSE_RANGE = 11 # (reward going from 0 to DENSE_RANGE - 1)
 
+class bdone:
+    NOT = 0
+    TERM = 1
+    MAX = 2
+
 class TabularEnv(gym.Env):
     metadata = {'render.modes': ['human','ansi']}
     
@@ -66,7 +71,8 @@ class TabularEnv(gym.Env):
 
     def getCurrentState(self):
         # State given to the agent: contains both current position and terminal state
-        return self.current_state * 10**(np.ceil(np.log10(self.grid_x*self.grid_y))) + self.terminal_state
+        state = self.current_state * 10**(np.ceil(np.log10(self.grid_x*self.grid_y))) + self.terminal_state
+        return state
 
     def step(self, action):
         # Check that action is legal
@@ -113,6 +119,7 @@ class TabularEnv(gym.Env):
         self.init_state = np.random.choice(range(self.grid_x*self.grid_y))
         self.current_state = self.init_state
         self.init_grid()
+        return self.current_state
 
     def render(self, mode='ansi'):
         ### Characters meaning:
@@ -148,7 +155,12 @@ class TabularEnv(gym.Env):
         print()
 
     def close(self, reason):
-        self.done = True
+        if reason == "term":
+            self.done = bdone.TERM
+        elif reason == "max_steps":
+            self.done = bdone.MAX
+        else:
+            print("Error on closing reason in environment.close() - this should not have happened")
         reward, reward_noise, reward_var = self._get_reward(reason)
         return reward, reward_noise, reward_var
     
