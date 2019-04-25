@@ -119,7 +119,7 @@ class TabularEnv(gym.Env):
         self.init_state = np.random.choice(range(self.grid_x*self.grid_y))
         self.current_state = self.init_state
         self.init_grid()
-        return self.current_state
+        return self.getCurrentState()
 
     def render(self, mode='ansi'):
         ### Characters meaning:
@@ -217,8 +217,8 @@ class SparseTabularEnvironment(TabularEnv):
         # Terminal state
         elif closing_reason == "term":
             reward_mean = breward.TERM + self.step_count*breward.STEP # End
-            reward_var = self.step_count**2*self.rvar_mean_step + self.rvar_mean_ter
-            reward_var_var = self.step_count**4*self.rvar_var_step + self.rvar_var_ter
+            reward_var = self.step_count*self.rvar_mean_step + self.rvar_mean_ter
+            reward_var_var = self.step_count**2*self.rvar_var_step + self.rvar_var_ter
             return self.computeReward(reward_mean, reward_var, reward_var_var)
 
         else:
@@ -276,17 +276,6 @@ class DenseTabularEnvironment(TabularEnv):
             STATE_REWARDS[grid_x*grid_y] = [np.random.choice(range(breward.DENSE_RANGE)) for i in range(self.grid_x*self.grid_y)]
 
         self.state_reward = STATE_REWARDS[grid_x*grid_y]
-
-
-    def init_grid(self):
-        # Terminal state is drawn as one corner (different from first current_state)
-        self.terminal_state = self.current_state # Will be changed just afterwards
-        while self.terminal_state == self.current_state:  # Making sure terminal state is not initial state
-            self.terminal_state =  np.random.choice([0, self.grid_x -1, (self.grid_y-1)*self.grid_x, self.grid_x*self.grid_y - 1]) # 4 corners
-
-        # Indicator of state passed
-        self.passed = [0 for i in range(self.grid_x*self.grid_y)]
-        self.passed[self.current_state] = 1
 
 
     def _get_reward(self, closing_reason = False):
