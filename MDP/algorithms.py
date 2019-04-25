@@ -158,7 +158,8 @@ class ModifiedSarsa(Agent_Q):
         if R_var is None:
             R_var = 1./10**3
         if done == bdone.TERM: # We are sure of the terminal state being the terminal state with 0 value!
-            self.setCValue(Sn, An, 10**3)
+            for an in self.action_list:
+                self.setCValue(Sn, an, 10**3)
         C_SnAn = self.getCValue(Sn, An)
         wn = 1./(R_var + self.gamma**2/C_SnAn)
 
@@ -168,6 +169,10 @@ class ModifiedSarsa(Agent_Q):
         step = self.alpha * wn/C_SA
         new_q = q_sa + step * (R + self.gamma * q_sn_an - q_sa)
         self.setQValue(S, A, new_q)
+
+        #print("Q values: \n" + str(self.q_values))
+        #print("\nC values: \n" + str(self.C))
+        #time.sleep(2)
 
     def reset(self):
         super().reset()
