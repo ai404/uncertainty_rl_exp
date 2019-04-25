@@ -264,7 +264,6 @@ class DenseTabularEnvironment(TabularEnv):
             STATE_REWARDS[grid_x*grid_y] = [np.random.choice(range(breward.DENSE_RANGE)) for i in range(self.grid_x*self.grid_y)]
 
         self.state_reward = STATE_REWARDS[grid_x*grid_y]
-        self.state_reward[self.terminal_state] = breward.TERM
 
 
     def init_grid(self):
@@ -279,47 +278,24 @@ class DenseTabularEnvironment(TabularEnv):
 
 
     def _get_reward(self, closing_reason = False):
-        reward_mean = (1-self.passed[self.current_state])*self.state_reward[self.current_state] + breward.STEP
         if closing_reason == "term":
-            return self.computeReward(reward_mean, self.rvar_mean_ter, self.rvar_var_ter)
-        return self.computeReward(reward_mean, self.rvar_mean_step, self.rvar_var_step)
+            return self.computeReward(breward.TERM, self.rvar_mean_ter, self.rvar_var_ter)
+        else:
+            reward_mean = (1-self.passed[self.current_state])*self.state_reward[self.current_state] + breward.STEP
+            return self.computeReward(reward_mean, self.rvar_mean_step, self.rvar_var_step)
 
 
 
 if __name__ == "__main__":
   # Reward parameters
-    rew_var_mean_ter = 100000
-    rew_var_var_ter = 1
-    rew_var_mean_step = 100
-    rew_var_var_step = 1
+    rew_var_mean_ter = 0
+    rew_var_var_ter = 0
+    rew_var_mean_step = 0
+    rew_var_var_step = 0
     rew_params = {"rvar_mean_ter": rew_var_mean_ter, "rvar_var_ter": rew_var_var_ter, "rvar_mean_step": rew_var_mean_step, "rvar_var_step": rew_var_var_step}
     
     # Environment
     env = DenseTabularEnvironment(6, 6, rew_params)
-    env.render()
-
-    state, reward, reward_noise, reward_var, done = env.step(1)
-    print("Reward: " + str(reward) + ", noise: " + str(reward_noise) + ", var: " + str(reward_var))
-    env.render()
-    
-    state, reward, reward_noise, reward_var, done = env.step(1)
-    print("Reward: " + str(reward) + ", noise: " + str(reward_noise) + ", var: " + str(reward_var))
-    env.render()
-
-    state, reward, reward_noise, reward_var, done = env.step(2)
-    print("Reward: " + str(reward) + ", noise: " + str(reward_noise) + ", var: " + str(reward_var))
-    env.render()
-
-    state, reward, reward_noise, reward_var, done = env.step(2)
-    print("Reward: " + str(reward) + ", noise: " + str(reward_noise) + ", var: " + str(reward_var))
-    env.render()
-
-    state, reward, reward_noise, reward_var, done = env.step(3)
-    print("Reward: " + str(reward) + ", noise: " + str(reward_noise) + ", var: " + str(reward_var))
-    env.render()
-
-    state, reward, reward_noise, reward_var, done = env.step(0)
-    print("Reward: " + str(reward) + ", noise: " + str(reward_noise) + ", var: " + str(reward_var))
     env.render()
 
     state, reward, reward_noise, reward_var, done = env.step(0)
