@@ -117,7 +117,6 @@ class Sarsa(Agent_Q):
 
         self.ret += R
         R = R + R_noise # Add the noise on R
-
         q_sa = self.getQValue(S, A)
         q_sn_an = self.getQValue(Sn, An)
         self.incrementVisitNumber(S, A)
@@ -161,7 +160,7 @@ class ModifiedSarsa(Agent_Q):
             for an in self.action_list:
                 self.setCValue(Sn, an, 10**3)
         C_SnAn = self.getCValue(Sn, An)
-        wn = 1./(R_var + self.gamma**2/C_SnAn)
+        wn = 1./(R_var + (self.gamma**2)/C_SnAn)
 
         C_SA = self.getCValue(S, A)
         C_SA += wn

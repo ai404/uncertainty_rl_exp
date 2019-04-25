@@ -54,11 +54,11 @@ def compare(algo_list, env_list, exp_name, nb_runs, nb_episodes, do_list = False
         do_list = [[1 for env in env_list] for algo in algo_list]
 
     for algo in algo_list: # For each algo
-        print("Running algo: " + algo.name)
+        #print("Running algo: " + algo.name)
         env_id = 0
         for env in env_list:    # For each environment
             if do_list[algo_id][env_id]:
-                print("Running on environment: " + env.name)
+                #print("Running on environment: " + env.name)
                 legend.append(algo.name + " in " + env.name) # Add "algo in env" in the legend
                 trainer = Trainer(env, algo)
                 train_returns.append(trainer.evalAvgReturn([nb_runs, nb_episodes]))

@@ -48,6 +48,7 @@ class Drawer():
         plt.title(plot_title)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
+        plt.ylim(bottom=0)
         output_path = self.output_path_root + "/" + plot_title + ".png"
         plt.savefig(output_path, bbox_inches="tight")
 

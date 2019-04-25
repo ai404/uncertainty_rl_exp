@@ -50,8 +50,8 @@ if __name__ == '__main__':
     import tqdm
 
     # Experiment parameters
-    nb_runs = 4#00
-    nb_episodes = 10#000
+    nb_runs = 1000#00
+    nb_episodes = 500#000
 
     # set your alorithms here
     algo1 = Sarsa

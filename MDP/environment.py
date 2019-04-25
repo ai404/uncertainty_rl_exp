@@ -209,16 +209,16 @@ class SparseTabularEnvironment(TabularEnv):
 
         # Max steps
         elif closing_reason == "max_steps":
-            reward_mean = self.step_count*breward.STEP
-            reward_var = self.step_count*self.rvar_mean_step
-            reward_var_var = self.step_count**2*self.rvar_var_step
+            reward_mean = breward.STEP#self.step_count*breward.STEP
+            reward_var = self.rvar_mean_step#self.step_count*self.rvar_mean_step
+            reward_var_var = self.rvar_var_step#self.step_count**2*self.rvar_var_step
             return self.computeReward(reward_mean, reward_var, reward_var_var)
 
         # Terminal state
         elif closing_reason == "term":
             reward_mean = breward.TERM + self.step_count*breward.STEP # End
             reward_var = self.step_count*self.rvar_mean_step + self.rvar_mean_ter
-            reward_var_var = self.step_count**2*self.rvar_var_step + self.rvar_var_ter
+            reward_var_var = self.step_count*self.rvar_var_step + self.rvar_var_ter
             return self.computeReward(reward_mean, reward_var, reward_var_var)
 
         else:
