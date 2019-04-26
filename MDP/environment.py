@@ -14,6 +14,7 @@ STATE_REWARDS = {}
 
 
 class bcolors:
+# Rendering colors
     START = '\033[95m'
     #BLUE = '\033[94m'
     TERMINAL = '\033[92m'
@@ -22,16 +23,19 @@ class bcolors:
     BOLD = '\033[1m'
 
 class breward:
-    TERM = 100
-    STEP = -1
-    DENSE_RANGE = 11 # (reward going from 0 to DENSE_RANGE - 1)
+# Reward parameters
+    TERM = 100              # Goal state
+    STEP = -1               # Step penalty
+    DENSE_RANGE = 11        # Dense reward range (reward going from 0 to DENSE_RANGE - 1)
 
 class bdone:
-    NOT = 0
-    TERM = 1
-    MAX = 2
+# Code for reasons of env closing
+    NOT = 0                 # Not done!
+    TERM = 1                # Goal state reached
+    MAX = 2                 # Max number of steps reached
 
 class TabularEnv(gym.Env):
+# Parent class for tabular environments
     metadata = {'render.modes': ['human','ansi']}
     
     def __init__(self, grid_x = 5, grid_y = 5, seed = 42, max_steps = 200):
